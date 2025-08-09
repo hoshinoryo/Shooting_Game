@@ -14,44 +14,47 @@
 #include "collision.h"
 #include "effect.h"
 #include "direct3d.h"
+#include "background.h"
 #include "camera.h"
 
 const float MAP_WIDTH = 2000.0f;
 const float MAP_HEIGHT = 2000.0f;
 
-
 void Game_Initialize()
 {
     Player_Initialize({ Direct3D_GetBackBufferWidth() * 0.5f, Direct3D_GetBackBufferHeight() * 0.5f});
-    Camera_Initialize();
+    //Camera_Initialize();
     Bullet_Initialize();
-    Enemy_Initialize();
-    EnemySpawner_Initialize();
+    //Enemy_Initialize();
+    //EnemySpawner_Initialize();
     Effect_Initialize();
 
     // Enemyê∂ê¨äÌ
     EnemySpawner_Create({ (float)Direct3D_GetBackBufferWidth(), 200.0f }, ENEMY_TYPE_01, 4.0f, 2.0, 8);
     EnemySpawner_Create({                                 0.0f, 400.0f }, ENEMY_TYPE_02, 3.0f, 1.0, 4);
+
+	BG_Initialize();
 }
 
 void Game_Finalize()
 {
+	BG_Finalize();
     Effect_Finalize();
-    EnemySpawner_Finalize();
-    Enemy_Finalize();
+    //EnemySpawner_Finalize();
+    //Enemy_Finalize();
     Bullet_Finalize();
-    Camera_Finalize();
+    //Camera_Finalize();
     Player_Finalize();
 }
 
 void Game_Update(double elapsed_time)
 {
-    Camera_Update(Player_GetPosition(), (float)Direct3D_GetBackBufferWidth(), (float)Direct3D_GetBackBufferHeight(), MAP_WIDTH, MAP_HEIGHT);
-    EnemySpawner_Update(elapsed_time);
+    //Camera_Update(Player_GetPosition(), (float)Direct3D_GetBackBufferWidth(), (float)Direct3D_GetBackBufferHeight(), MAP_WIDTH, MAP_HEIGHT);
 
-    Player_Update(elapsed_time);
+    //EnemySpawner_Update(elapsed_time);
     Bullet_Update(elapsed_time);
-    Enemy_Update(elapsed_time);
+    Player_Update(elapsed_time);
+    //Enemy_Update(elapsed_time);
 
     hitJudgementBulletVSEnemy();
     hitJudgementPlayerVSEnemy();
@@ -61,10 +64,11 @@ void Game_Update(double elapsed_time)
 
 void Game_Draw()
 {
-    Camera_Set();
+	BG_Draw();
+    //Camera_Set();
     Bullet_Draw();
     Player_Draw(); // èdÇ»Ç¡ÇΩÇÁÇ≤ÇøÇÁÇ©ÇÁêÊÇ…ï`Ç≠
-    Enemy_Draw();
+    //Enemy_Draw();
     Effect_Draw();
 }
 

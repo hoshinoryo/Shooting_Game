@@ -108,7 +108,7 @@ void Polygon_Draw(void)
 		v[i].position.y = sinf(rad * i) * g_Radius + g_Cy;
 		v[i].position.z = 0.0f;
 		v[i].color = XMFLOAT4{ 1.0f, 1.0f, 1.0f, 1.0f };
-		v[i].uv = XMFLOAT2{ 0.5, 0.5f }; // UV座標の仮設定（中央に固定）
+		v[i].uv = XMFLOAT2{ 0.5, 0.5f };
 	}
 
 	// 頂点バッファのロックを解除
@@ -127,9 +127,6 @@ void Polygon_Draw(void)
 
 	// プリミティブトポロジ設定
 	g_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-
-	// テクスチャ設定
-	// g_pContext->PSSetShaderResources(0, 1, &g_pTexture);
 
 	// ポリゴン描画命令発行
 	g_pContext->Draw(g_NumVertex, 0);

@@ -43,9 +43,9 @@ int APIENTRY WinMain(
 	// Initialization
 	SystemTimer_Initialize();
 	KeyLogger_Initialize();
-	Mouse_Initialize(hWnd); // 引数はウィンドウ
+	Mouse_Initialize(hWnd);
 
-	Direct3D_Initialize(hWnd); // Direct3Dの初期化、必ず一番先頭
+	Direct3D_Initialize(hWnd); // Direct3Dの初期化
 	Shader_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 	Sprite_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 	Texture_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
@@ -53,7 +53,6 @@ int APIENTRY WinMain(
 	Polygon_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 
 	Game_Initialize();
-
 
 	hal::DebugText dt(Direct3D_GetDevice(), Direct3D_GetContext(),
 		L"consolab_ascii_512.png",
@@ -106,16 +105,12 @@ int APIENTRY WinMain(
 
 				// ゲームの更新
 				KeyLogger_Update(); // キーの状態を更新
-
 				Game_Update(elapsed_time);
-
 				SpriteAnim_Update(elapsed_time);
 				
 				// ゲームの描画
-				Direct3D_Clear(); // Clear the screen
-
+				Direct3D_Clear();
 				Sprite_Begin();
-
 				Game_Draw();
 
 				// フレーム計測数表示
@@ -131,9 +126,8 @@ int APIENTRY WinMain(
 
 				Direct3D_Present();
 
-				frame_count++; //フレーム計測用、気を付けて
+				frame_count++; //フレーム計測用
 			}
-
 		}
 
 	} while (msg.message != WM_QUIT);

@@ -1,46 +1,47 @@
-/*==============================================================================
+// ==========================================================================================
+// 
+// File Name: chader.cpp
+// Date: 2025/08/09
+// Author: Gu Anyi
+// Description: Initialize and manage shaders
+// 
+// ==========================================================================================
 
-   シェーダー [shader.cpp]
-														 Author : Youhei Sato
-														 Date   : 2025/05/15
---------------------------------------------------------------------------------
-
-==============================================================================*/
 #include <d3d11.h>
 #include <DirectXMath.h>
-using namespace DirectX;
+#include <fstream>
+
 #include "direct3d.h"
 #include "debug_ostream.h"
-#include <fstream>
 #include "shader.h"
 
+using namespace DirectX;
+
 /*--------------------------------------------------
-	グローバル変数
+	ポインタ変数
 ----------------------------------------------------*/
 
 static ID3D11VertexShader* g_pVertexShader = nullptr;
+static ID3D11PixelShader* g_pPixelShader = nullptr;
 static ID3D11InputLayout* g_pInputLayout = nullptr;
+static ID3D11SamplerState* g_pSamplerState = nullptr;
+
 static ID3D11Buffer* g_pVSConstantBuffer0 = nullptr; // 定数バッファb0
 static ID3D11Buffer* g_pVSConstantBuffer1 = nullptr; // 定数バッファb1
-static ID3D11PixelShader* g_pPixelShader = nullptr;
-static ID3D11SamplerState* g_pSamplerState = nullptr;
 
 // 注意！初期化で外部から設定されるもの。Release不要。
 static ID3D11Device* g_pDevice = nullptr;
 static ID3D11DeviceContext* g_pContext = nullptr;
 
-
 bool Shader_Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
 	HRESULT hr;
 
-	// デバイスとデバイスコンテキストのチェック
 	if (!pDevice || !pContext) {
 		hal::dout << "Shader_Initialize() : 与えられたデバイスかコンテキストが不正です" << std::endl;
 		return false;
 	}
 
-	// デバイスとデバイスコンテキストの保存
 	g_pDevice = pDevice;
 	g_pContext = pContext;
 
@@ -53,9 +54,9 @@ bool Shader_Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	}
 
 	// ファイルサイズを取得
-	ifs_vs.seekg(0, std::ios::end); // ファイルポインタを末尾に移動
-	std::streamsize filesize = ifs_vs.tellg(); // ファイルポインタの位置を取得（つまりファイルサイズ）
-	ifs_vs.seekg(0, std::ios::beg); // ファイルポインタを先頭に戻す
+	ifs_vs.seekg(0, std::ios::end);
+	std::streamsize filesize = ifs_vs.tellg();
+	ifs_vs.seekg(0, std::ios::beg);
 
 	// バイナリデータを格納するためのバッファを確保
 	unsigned char* vsbinary_pointer = new unsigned char[filesize];
@@ -68,20 +69,19 @@ bool Shader_Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 
 	if (FAILED(hr)) {
 		hal::dout << "Shader_Initialize() : 頂点シェーダーの作成に失敗しました" << std::endl;
-		delete[] vsbinary_pointer; // メモリリークしないようにバイナリデータのバッファを解放
+		delete[] vsbinary_pointer;
 		return false;
 	}
 
 
 	// 頂点レイアウトの定義
-	// UVの方がもうTEXCOORDという名前が定められている
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	UINT num_elements = ARRAYSIZE(layout); // 配列の要素数を取得
+	UINT num_elements = ARRAYSIZE(layout);
 
 	// 頂点レイアウトの作成
 	hr = g_pDevice->CreateInputLayout(layout, num_elements, vsbinary_pointer, filesize, &g_pInputLayout);
@@ -133,13 +133,6 @@ bool Shader_Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 
 	// フィルタリング
 	sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-
-	// UV参照外の取り扱い（UVアドレッシングモード Address Mode）
-	//
-	// UV参照外：UV座標が0.0～1.0の範囲を超えた場合
-	// 例: U < 0.0 または U > 1.0、V < 0.0 または V > 1.0
-	// 超えた場合はアドレスモード（CLAMP、WRAPなど）で処理される
-	//=============================================================
 	sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -165,41 +158,32 @@ void Shader_Finalize()
 }
 
 void Shader_SetWorldMatrix(const DirectX::XMMATRIX& matrix)
-{// 定数バッファ格納用行列の構造体を定義
+{
 	XMFLOAT4X4 transpose;
 
-	// 行列を転置して定数バッファ格納用行列に変換
 	XMStoreFloat4x4(&transpose, XMMatrixTranspose(matrix));
 
-	// 定数バッファに行列をセット
 	g_pContext->UpdateSubresource(g_pVSConstantBuffer1, 0, nullptr, &transpose, 0, 0);
 }
 
 void Shader_SetProjectionMatrix(const DirectX::XMMATRIX& matrix)
 {
-	// 定数バッファ格納用行列の構造体を定義
 	XMFLOAT4X4 transpose;
 
-	// 行列を転置して定数バッファ格納用行列に変換
 	XMStoreFloat4x4(&transpose, XMMatrixTranspose(matrix));
 
-	// 定数バッファに行列をセット
 	g_pContext->UpdateSubresource(g_pVSConstantBuffer0, 0, nullptr, &transpose, 0, 0);
 }
 
 void Shader_Begin()
 {
-	// 頂点シェーダーとピクセルシェーダーを描画パイプラインに設定
 	g_pContext->VSSetShader(g_pVertexShader, nullptr, 0);
 	g_pContext->PSSetShader(g_pPixelShader, nullptr, 0);
 
-	// 頂点レイアウトを描画パイプラインに設定
 	g_pContext->IASetInputLayout(g_pInputLayout);
 
-	// 定数バッファを描画パイプラインに設定
 	g_pContext->VSSetConstantBuffers(0, 1, &g_pVSConstantBuffer0);
 	g_pContext->VSSetConstantBuffers(1, 1, &g_pVSConstantBuffer1);
 
-	// サンプラーステートを描画パイプラインに設定
 	g_pContext->PSSetSamplers(0, 1, &g_pSamplerState);
 }

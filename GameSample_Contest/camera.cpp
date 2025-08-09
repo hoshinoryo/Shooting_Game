@@ -1,14 +1,16 @@
-/*==============================================================================
+// ==========================================================================================
+// 
+// File Name: camera.cpp
+// Date: 2025/08/08
+// Author: Gu Anyi
+// Description: Calculates the visible area in the map based on the target position and screen size
+// 
+// ==========================================================================================
 
-   ÉJÉÅÉâê›íË [camera.cpp]
-														 Author : GU ANYI
-														 Date   : 2025/07/08
---------------------------------------------------------------------------------
-
-==============================================================================*/
 #include "camera.h"
 #include "shader.h"
 
+#include <iostream>
 #include <DirectXMath.h>
 
 using namespace DirectX;
@@ -37,12 +39,15 @@ void Camera_Update(const XMFLOAT2& target, float screenWidth, float screenHeight
         g_CameraPosition.x = mapWidth - screenWidth;
     if (g_CameraPosition.y > mapHeight - screenHeight)
         g_CameraPosition.y = mapHeight - screenHeight;
+
+	std::cout << "Camera Position: (" << g_CameraPosition.x << ", " << g_CameraPosition.y << ")" << std::endl;
 }
 
 void Camera_Set()
 {
     XMMATRIX view = XMMatrixTranslation(-g_CameraPosition.x, -g_CameraPosition.y, 0.0f);
-    Shader_SetWorldMatrix(view);
+
+    Shader_SetProjectionMatrix(view);
 }
 
 XMFLOAT2 Camera_GetPosition()

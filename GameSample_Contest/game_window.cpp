@@ -14,8 +14,8 @@
 /*--------------------------------------------------
 ウィンドウ情報
 ----------------------------------------------------*/
-static constexpr char WINDOW_CLASS[] = "Game Windowy"; // メインウィンドウクラス名
-static constexpr char TITLE[] = "My Window"; // タイトルバーのテキスト、あとは課題名とかゲーム名とか
+static constexpr char WINDOW_CLASS[] = "Game Windowy";
+static constexpr char TITLE[] = "Christmas Game";
 constexpr int SCREEN_WIDTH = 1600;
 constexpr int SCREEN_HEIGHT = 900; // これは描ける範囲、メニューとバーが含まらない
 
@@ -26,9 +26,9 @@ HWND GameWindow_Create(HINSTANCE hInstance)
     WNDCLASSEX wcex = {};
 
     wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.lpfnWndProc = WndProc; // 関数のポインタ
+    wcex.lpfnWndProc = WndProc;
     wcex.hInstance = hInstance;
-    wcex.hIcon = LoadIcon(hInstance, IDI_APPLICATION); // hInstanceが必要だから、mainで引数として渡す
+    wcex.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     //wcex.lpszMenuName = nullptr; // メニューは作らない
