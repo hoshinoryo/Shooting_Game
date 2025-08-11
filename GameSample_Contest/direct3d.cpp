@@ -164,8 +164,6 @@ void Direct3D_Finalize()
 
 }
 
-/* 裏をクリアして、裏で絵を描いて、表と裏を入り替えて、という過程が繰り返す */
-
 void Direct3D_Clear()
 {
 	float clear_color[4] = { 0.196f, 0.0f, 0.078f, 1.0f }; // BG色

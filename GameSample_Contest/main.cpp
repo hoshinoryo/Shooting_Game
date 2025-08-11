@@ -3,7 +3,8 @@
 #include <Windows.h>
 #include <sstream>
 #include <DirectXMath.h>
-//#include "debug_ostream.h"
+#include <Xinput.h>
+
 #include "game_window.h"
 #include "direct3d.h"
 #include "shader.h"
@@ -16,7 +17,7 @@
 #include "mouse.h"
 #include "key_logger.h"
 #include "game.h"
-#include <Xinput.h>
+
 #pragma comment(lib, "xinput.lib")
 
 using namespace DirectX;

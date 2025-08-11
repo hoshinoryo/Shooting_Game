@@ -29,8 +29,6 @@ static ID3D11DeviceContext* g_pContext = nullptr;
 
 
 // 頂点構造体（GPUに渡す頂点データの定義）
-// ※この構造体のメンバーや順番は、HLSL内のVS_IN構造体と一致させる必要がある。
-//   一致しないと、Direct3DのInputLayout設定でデータが正しく渡らず、表示エラーの原因になる。
 struct Vertex
 {
 	XMFLOAT3 position; // 頂点座標

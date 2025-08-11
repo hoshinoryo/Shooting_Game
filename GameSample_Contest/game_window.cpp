@@ -39,7 +39,7 @@ HWND GameWindow_Create(HINSTANCE hInstance)
 
     /* メインウィンドウの作成 */
 
-    RECT window_rect{ 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT }; // 同じコードは出現しないように
+    RECT window_rect{ 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 
     DWORD style = WS_OVERLAPPEDWINDOW ^ (WS_THICKFRAME | WS_MAXIMIZEBOX);
 

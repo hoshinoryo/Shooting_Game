@@ -8,7 +8,7 @@
 ==============================================================================*/
 #include "bullet.h"
 #include "player.h"
-#include "direct3d.h" // ‰æ–ÊƒTƒCƒY‚ğæ“¾
+#include "direct3d.h"
 #include "sprite.h"
 #include "texture.h"
 #include <DirectXMath.h>

@@ -10,47 +10,45 @@
 #include "camera.h"
 #include "shader.h"
 
-#include <iostream>
 #include <DirectXMath.h>
 
 using namespace DirectX;
 
-static XMFLOAT2 g_CameraPosition = { 0.0f, 0.0f };
-
-void Camera_Initialize()
+Camera::Camera()
 {
-	g_CameraPosition = { 0.0f, 0.0f };
+	position = { 0.0f, 0.0f };
+	screenWidth = -1;
+	screenHeight = -1;
+	mapWidth = -1;
+	mapHeight = -1;
 }
 
-void Camera_Finalize()
+void Camera::Initialize(float sw, float sh, float mw, float mh)
+{
+	screenWidth = sw;
+	screenHeight = sh;
+	mapWidth = mw;
+	mapHeight = mh;
+}
+
+void Camera::Finalize()
 {
 }
 
-void Camera_Update(const XMFLOAT2& target, float screenWidth, float screenHeight, float mapWidth, float mapHeight)
+void Camera::Update(const XMFLOAT2& target)
 {
-    g_CameraPosition.x = target.x - screenWidth * 0.5f;
-    g_CameraPosition.y = target.y - screenHeight * 0.5f;
+	// Calculate the new camera position based on the target position
+	position.x = target.x - screenWidth / 2.0f;
+	position.y = target.y - screenHeight / 2.0f;
 
-    if (g_CameraPosition.x < 0.0f)
-        g_CameraPosition.x = 0.0f;
-    if (g_CameraPosition.y < 0.0f)
-        g_CameraPosition.y = 0.0f;
-    if (g_CameraPosition.x > mapWidth - screenWidth)
-        g_CameraPosition.x = mapWidth - screenWidth;
-    if (g_CameraPosition.y > mapHeight - screenHeight)
-        g_CameraPosition.y = mapHeight - screenHeight;
-
-	std::cout << "Camera Position: (" << g_CameraPosition.x << ", " << g_CameraPosition.y << ")" << std::endl;
+	// Clamp the camera position to ensure it doesn't go out of bounds of the map
+	if (position.x < 0) position.x = 0;
+	if (position.y < 0) position.x = 0;
+	if (position.x + screenWidth > mapWidth) position.x = mapWidth - screenWidth;
+	if (position.y + screenHeight > mapHeight) position.y = mapHeight - screenHeight;
 }
 
-void Camera_Set()
+ViewRect Camera::GetViewRect() const
 {
-    XMMATRIX view = XMMatrixTranslation(-g_CameraPosition.x, -g_CameraPosition.y, 0.0f);
-
-    Shader_SetProjectionMatrix(view);
-}
-
-XMFLOAT2 Camera_GetPosition()
-{
-    return g_CameraPosition;
+	return ViewRect{ position, screenWidth, screenHeight };
 }
