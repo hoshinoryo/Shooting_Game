@@ -10,15 +10,15 @@
 #define PLAYER_H
 
 #include "collision.h"
+#include "camera.h"
 
 #include <DirectXMath.h>
 
 void Player_Initialize(const DirectX::XMFLOAT2& position);
 void Player_Finalize();
 
-// ゲーム作るのは絶対必要のアップデートとドロー(最低限)
 void Player_Update(double elapsed_time);
-void Player_Draw();
+void Player_Draw(const ViewRect& viewRect);
 
 void Player_Load();
 

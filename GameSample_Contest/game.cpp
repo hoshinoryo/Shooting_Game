@@ -69,12 +69,16 @@ void Game_Update(double elapsed_time)
     Player_Update(elapsed_time);
     testCam.Update(Player_GetPosition());
 
-    //hal::dout << "Camera Position: (" << testCam.GetX() << ", " << testCam.GetY() << ")" << std::endl;
-    
     hitJudgementBulletVSEnemy();
     hitJudgementPlayerVSEnemy();
 
     Effect_Update(elapsed_time);
+
+#if defined(DEBUG) || defined(_DEBUG)
+    hal::dout << "Player position: " << Player_GetPosition().x << ", " << Player_GetPosition().y << std::endl;
+    hal::dout << "Camera Position: " << testCam.GetX() << ", " << testCam.GetY() << std::endl;
+    hal::dout << "Delta: " << (Player_GetPosition().x - testCam.GetX() - Direct3D_GetBackBufferWidth() * 0.5f) << std::endl;
+#endif
 }
 
 void Game_Draw()
@@ -83,7 +87,8 @@ void Game_Draw()
     testMap.Draw(testCam.GetViewRect());
 
     Bullet_Draw();
-    Player_Draw();
+    Player_Draw(testCam.GetViewRect());
+
     //Enemy_Draw();
     Effect_Draw();
 }

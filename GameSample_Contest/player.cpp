@@ -13,6 +13,7 @@
 #include "key_logger.h"
 #include "bullet.h"
 #include "direct3d.h"
+#include "debug_text.h"
 
 #include <DirectXMath.h>
 using namespace DirectX;
@@ -70,7 +71,6 @@ void Player_Update(double elapsed_time)
         direction += {1.0f, 0.0f};
         g_PlayerFacingLeft = true;
     }
-    // 同時にAとDを押すと動かない
 
     direction = XMVector2Normalize(direction); // 単位ベクトルになる
 
@@ -88,28 +88,26 @@ void Player_Update(double elapsed_time)
     position += velocity * elapsed_time; // 演算過程、elapsed_timeを使って積分する
     velocity += -velocity * 4.0f * elapsed_time; // 止まる効果
 
-    XMStoreFloat2(&g_PlayerPosition, position); // 演算結果戻す
+    XMStoreFloat2(&g_PlayerPosition, position);
     XMStoreFloat2(&g_PlayerVelocity, velocity);
 
-    /*
-    // 画面の範囲で囲まれてる
+    // マップの範囲で囲まれてる
     if (g_PlayerPosition.x <= 0.0f)
     {
         g_PlayerPosition.x = 0.0f;
     }
-    if (g_PlayerPosition.x >= (Direct3D_GetBackBufferWidth() - g_PlayerSize.x))
+    if (g_PlayerPosition.x >= (3200.0f - g_PlayerSize.x))
     {
-        g_PlayerPosition.x = Direct3D_GetBackBufferWidth() - g_PlayerSize.x;
+        g_PlayerPosition.x = 3200.0f - g_PlayerSize.x;
     }
     if (g_PlayerPosition.y <= 0.0f)
     {
         g_PlayerPosition.y = 0.0f;
     }
-    if (g_PlayerPosition.y >= (Direct3D_GetBackBufferHeight() - g_PlayerSize.y))
+    if (g_PlayerPosition.y >= (1920.0f - g_PlayerSize.y))
     {
-        g_PlayerPosition.y = Direct3D_GetBackBufferHeight() - g_PlayerSize.y;
+        g_PlayerPosition.y = 1920.0f - g_PlayerSize.y;
     }
-    */
 
     // 弾を発射する
     if (KeyLogger_IsTrigger(KK_SPACE))
@@ -118,11 +116,17 @@ void Player_Update(double elapsed_time)
     }
 }
 
-void Player_Draw()
+void Player_Draw(const ViewRect& viewRect)
 {
     if (!g_PlayerEnable) return;
-
-    Sprite_Draw(g_PlayerTexid, g_PlayerPosition.x, g_PlayerPosition.y, g_PlayerSize.x, g_PlayerSize.y, g_PlayerFacingLeft);
+    
+    // NOTICE: IN THE SCREEN SPACE!!!
+    Sprite_Draw(
+        g_PlayerTexid,
+        g_PlayerPosition.x - viewRect.rectPosition.x, g_PlayerPosition.y - viewRect.rectPosition.y,
+        g_PlayerSize.x, g_PlayerSize.y,
+        g_PlayerFacingLeft
+    );
 }
 
 void Player_Load()

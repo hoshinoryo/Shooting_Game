@@ -40,7 +40,6 @@ public:
 
 	void Update(float elapsed_time);
 	void Draw(const ViewRect& viewRect);
-	//void Draw();
 
 	int GetMapWidth() const { return mapWidth; }
 	int GetMapHeight() const { return mapHeight; }

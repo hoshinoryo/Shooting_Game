@@ -64,15 +64,17 @@ void Map::Update(float elapsed_time)
 }
 
 void Map::Draw(const ViewRect& viewRect)
-//void Map::Draw()
 {
 	// Starting map chip index
-	int offsetX = static_cast<int>(viewRect.rectPosition.x) / MAPCHIP_WIDTH;
-	int offsetY = static_cast<int>(viewRect.rectPosition.y) / MAPCHIP_HEIGHT;
+	float offsetX = viewRect.rectPosition.x / MAPCHIP_WIDTH;
+	float offsetY = viewRect.rectPosition.y / MAPCHIP_HEIGHT;
+
+	int tileOffsetX = static_cast<int>(offsetX);
+	int tileOffsetY = static_cast<int>(offsetY);
 
 	// Local offset from starting map chip
-	int localOffsetX = -(viewRect.rectPosition.x - offsetX * MAPCHIP_WIDTH);
-	int localOffsetY = -(viewRect.rectPosition.y - offsetY * MAPCHIP_HEIGHT);
+	float localOffsetX = -(viewRect.rectPosition.x - tileOffsetX * MAPCHIP_WIDTH);
+	float localOffsetY = -(viewRect.rectPosition.y - tileOffsetY * MAPCHIP_HEIGHT);
 
 	int horizontalCount = static_cast<int>(viewRect.rectWidth / MAPCHIP_WIDTH) + 2;
 	int verticalCount = static_cast<int>(viewRect.rectHeight / MAPCHIP_HEIGHT) + 2;

@@ -43,11 +43,12 @@ void Camera::Update(const XMFLOAT2& target)
 
 	// Clamp the camera position to ensure it doesn't go out of bounds of the map
 	if (position.x < 0) position.x = 0;
-	if (position.y < 0) position.x = 0;
+	if (position.y < 0) position.y = 0;
 	if (position.x + screenWidth > mapWidth) position.x = mapWidth - screenWidth;
 	if (position.y + screenHeight > mapHeight) position.y = mapHeight - screenHeight;
 }
 
+// 
 ViewRect Camera::GetViewRect() const
 {
 	return ViewRect{ position, screenWidth, screenHeight };
