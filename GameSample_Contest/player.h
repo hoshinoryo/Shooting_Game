@@ -14,6 +14,16 @@
 
 #include <DirectXMath.h>
 
+enum Status {
+	none, // for initialization
+	stand,
+	walkFront,
+	walkLeft,
+	walkBack,
+	walkRight,
+	STATUS_MAX
+};
+
 class Player
 {
 private:
@@ -23,8 +33,10 @@ private:
 	DirectX::XMFLOAT2 playerSize;
 	bool playerFlip;
 	int playerTexId;
+	int playerAnimPlayId;
 	Circle playerCollision;
 	bool playerEnable;
+	Status playerStatus;
 
 public:
 	Player();
@@ -34,8 +46,7 @@ public:
 
 	void Update(double elapsed_time);
 	void Draw(const ViewRect& viewRect);
-
-	void Load();
+	void ChangeStatus(Status newPlayerStatus);
 
 	bool IsEnable();
 	Circle GetCollision();

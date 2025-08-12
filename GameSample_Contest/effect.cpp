@@ -60,7 +60,7 @@ void Effect_Draw()
     {
         if (!e.isEnable) continue;
 
-        SpriteAnim_Draw(e.sprite_anim_id, e.position.x, e.position.y, 70.0f, 70.0f);
+        SpriteAnim_Draw(e.sprite_anim_id, e.position.x, e.position.y, 70.0f, 70.0f, false);
     }
 }
 

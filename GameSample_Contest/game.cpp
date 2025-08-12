@@ -26,10 +26,10 @@
 
 Map testMapMg;
 Map testMapFg;
-Player testPlayer;
 std::string mg_filePath = "resources/Tiled_Project/output/test_map_mg.csv";
 std::string fg_filePath = "resources/Tiled_Project/output/test_map_fg.csv";
 
+Player testPlayer;
 Camera testCam;
 
 
@@ -40,8 +40,10 @@ void Game_Initialize()
     testMapFg.Initialize(fg_filePath);
 
     // Camera Initialization
-    testCam.Initialize(Direct3D_GetBackBufferWidth(), Direct3D_GetBackBufferHeight(),
-        (float)testMapMg.GetMapWidth(), (float)testMapMg.GetMapHeight());
+    testCam.Initialize(
+        Direct3D_GetBackBufferWidth(), Direct3D_GetBackBufferHeight(),
+        (float)testMapMg.GetMapWidth(), (float)testMapMg.GetMapHeight()
+    );
 
     testPlayer.Initialize({ Direct3D_GetBackBufferWidth() * 0.5f, Direct3D_GetBackBufferHeight() * 0.5f});
     Bullet_Initialize();
@@ -85,11 +87,13 @@ void Game_Update(double elapsed_time)
 
     Effect_Update(elapsed_time);
 
-#if defined(DEBUG) || defined(_DEBUG)
-    hal::dout << "Player position: " << testPlayer.GetPosition().x << ", " << testPlayer.GetPosition().y << std::endl;
-    hal::dout << "Camera Position: " << testCam.GetX() << ", " << testCam.GetY() << std::endl;
-    hal::dout << "Delta: " << (testPlayer.GetPosition().x - testCam.GetX() - Direct3D_GetBackBufferWidth() * 0.5f) << std::endl;
-#endif
+//#if defined(DEBUG) || defined(_DEBUG)
+//
+//    hal::dout << "Player position: " << testPlayer.GetPosition().x << ", " << testPlayer.GetPosition().y << std::endl;
+//    hal::dout << "Camera Position: " << testCam.GetX() << ", " << testCam.GetY() << std::endl;
+//    hal::dout << "Delta: " << (testPlayer.GetPosition().x - testCam.GetX() - Direct3D_GetBackBufferWidth() * 0.5f) << std::endl;
+//
+//#endif
 }
 
 void Game_Draw()

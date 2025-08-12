@@ -8,6 +8,7 @@
 // ==========================================================================================
 #include "player.h"
 #include "sprite.h"
+#include "sprite_anim.h"
 #include "texture.h"
 #include "key_logger.h"
 #include "bullet.h"
@@ -16,8 +17,10 @@
 
 #include <DirectXMath.h>
 
-
 using namespace DirectX;
+
+static constexpr float PLAYER_ANIM_PLAY_RATE = 0.08f;
+
 
 Player::Player()
 {
@@ -26,12 +29,15 @@ Player::Player()
     playerSize = {};
     playerFlip = false;
     playerTexId = -1;
+    playerAnimPlayId = -1;
     playerCollision = { { 64.0f, 64.0f }, 64.0f };
     playerEnable = true;
+    playerStatus = none;
 }
 
 void Player::Initialize(const XMFLOAT2& position)
 {
+
     playerPosition = position;
     playerVelocity = { 0.0f, 0.0f };
     playerSize = { 128.0f, 128.0f };
@@ -54,24 +60,34 @@ void Player::Update(double elapsed_time)
 
     XMVECTOR direction = {};
 
+    Status newPlayerStatus = stand;
+
     if (KeyLogger_IsPressed(KK_W)) //方向判断
     {
         direction += {0.0f, -1.0f};
+        playerFlip = false;
+        newPlayerStatus = walkBack;
     }
     if (KeyLogger_IsPressed(KK_A))
     {
         direction += {-1.0f, 0.0f};
         playerFlip = true;
+        newPlayerStatus = walkRight;
     }
     if (KeyLogger_IsPressed(KK_S))
     {
         direction += {0.0f, 1.0f};
+        playerFlip = false;
+        newPlayerStatus = walkFront;
     }
     if (KeyLogger_IsPressed(KK_D))
     {
         direction += {1.0f, 0.0f};
         playerFlip = false;
+        newPlayerStatus = walkLeft;
     }
+
+    ChangeStatus(newPlayerStatus);
 
     direction = XMVector2Normalize(direction); // 単位ベクトル
 
@@ -107,22 +123,85 @@ void Player::Update(double elapsed_time)
     }
 }
 
+// NOTICE: IN THE SCREEN SPACE!!!
+
 void Player::Draw(const ViewRect& viewRect)
 {
     if (!playerEnable) return;
-    
-    // NOTICE: IN THE SCREEN SPACE!!!
-    Sprite_Draw(
-        playerTexId,
+
+    SpriteAnim_Draw(
+        playerAnimPlayId,
         playerPosition.x - viewRect.rectPosition.x, playerPosition.y - viewRect.rectPosition.y,
-        0.0f, 128.0f,
-        playerSize.x, playerSize.y,
-        playerFlip
+        playerSize.x, playerSize.y, playerFlip
     );
 }
 
-void Player::Load()
+void Player::ChangeStatus(Status newPlayerStatus)
 {
+    if (newPlayerStatus == playerStatus) return; // if status haven't changed
+
+    if (playerAnimPlayId >= 0)
+    {
+        SpriteAnim_DestroyPlayer(playerAnimPlayId);
+        playerAnimPlayId = -1;
+    }
+
+    playerStatus = newPlayerStatus;
+
+    // register new animation
+    switch (playerStatus)
+    {
+    case stand:
+        playerAnimPlayId = SpriteAnim_CreatePlayer(
+            SpriteAnim_RegisterPattern(
+                playerTexId, 1, 1,
+                PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
+                { 256.0f, 896.0f }, true
+            )
+        );
+        break;
+
+    case walkFront:
+        playerAnimPlayId = SpriteAnim_CreatePlayer(
+            SpriteAnim_RegisterPattern(
+                playerTexId, 6, 6,
+                PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
+                { 0.0f, 0.0f }, true
+            )
+        );
+        break;
+
+    case walkLeft:
+        playerAnimPlayId = SpriteAnim_CreatePlayer(
+            SpriteAnim_RegisterPattern(
+                playerTexId, 6, 6,
+                PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
+                { 0.0f, 128.0f }, true
+            )
+        );
+        break;
+
+    case walkBack:
+        playerAnimPlayId = SpriteAnim_CreatePlayer(
+            SpriteAnim_RegisterPattern(
+                playerTexId, 6, 6,
+                PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
+                { 0.0f, 256.0f }, true
+            )
+        );
+        break;
+
+    case walkRight:
+        playerAnimPlayId = SpriteAnim_CreatePlayer(
+            SpriteAnim_RegisterPattern(
+                playerTexId, 6, 6,
+                PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
+                { 0.0f, 128.0f }, true
+            )
+        );
+        break;
+
+    }
 }
 
 bool Player::IsEnable()

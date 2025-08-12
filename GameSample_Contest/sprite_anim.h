@@ -15,13 +15,13 @@ void SpriteAnim_Initialize();
 void SpriteAnim_Finalize();
 
 void SpriteAnim_Update(double elapsed_time);
-void SpriteAnim_Draw(int playid, float dx, float dy, float dw, float dh);
+void SpriteAnim_Draw(int playid, float dx, float dy, float dw, float dh, bool isFlipX);
 
 // パターン登録用
 int SpriteAnim_RegisterPattern(
 	int texId, int patternMax, int h_pattern_max, double seconds_per_pattern,
-	const DirectX::XMUINT2& pattern_size,
-	const DirectX::XMUINT2& start_position, bool is_looped = true);
+	const DirectX::XMFLOAT2& pattern_size, 
+	const DirectX::XMFLOAT2& start_position, bool is_looped = true);
 
 int SpriteAnim_CreatePlayer(int anim_pattern_id);
 bool SpriteAnim_IsStopped(int index);
