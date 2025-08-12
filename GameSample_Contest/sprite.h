@@ -12,6 +12,13 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 
+struct Vertex
+{
+	DirectX::XMFLOAT3 position;
+	DirectX::XMFLOAT4 color;
+	DirectX::XMFLOAT2 uv;
+};
+
 void Sprite_Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 void Sprite_Finalize(void);
 
@@ -38,5 +45,7 @@ void Sprite_Draw(int texid, float dx, float dy, float dw, float dh, int px, int 
 // 二つのバッファ、回転もできる
 void Sprite_Draw(int texid, float dx, float dy, float dw, float dh, int px, int py, int pw, int ph, float angle,
 	const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f });
+
+void Sprite_UVFlip(Vertex* v, float u0, float u1, float v0, float v1, bool isFlipX);
 
 #endif // SPRITE_H

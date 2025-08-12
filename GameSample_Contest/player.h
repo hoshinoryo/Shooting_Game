@@ -1,11 +1,11 @@
-/*==============================================================================
-
-　 プレーヤー制御[player.h]
-                                                         Author : Youhei Sato
-                                                         Date   : 2025/06/27
---------------------------------------------------------------------------------
-
-==============================================================================*/
+// ==========================================================================================
+// 
+// File Name: player.cpp
+// Date: 2025/08/13
+// Author: Gu Anyi
+// Description: Player class header file
+// 
+// ==========================================================================================
 #ifndef PLAYER_H
 #define PLAYER_H
 
@@ -14,17 +14,34 @@
 
 #include <DirectXMath.h>
 
-void Player_Initialize(const DirectX::XMFLOAT2& position);
-void Player_Finalize();
+class Player
+{
+private:
 
-void Player_Update(double elapsed_time);
-void Player_Draw(const ViewRect& viewRect);
+	DirectX::XMFLOAT2 playerPosition;
+	DirectX::XMFLOAT2 playerVelocity;
+	DirectX::XMFLOAT2 playerSize;
+	bool playerFlip;
+	int playerTexId;
+	Circle playerCollision;
+	bool playerEnable;
 
-void Player_Load();
+public:
+	Player();
 
-bool Player_IsEnable(); // 弾の有効無効
-Circle Player_GetCollision();
-DirectX::XMFLOAT2 Player_GetPosition();
-void Player_Destroy();
+	void Initialize(const DirectX::XMFLOAT2& position);
+	void Finalize();
+
+	void Update(double elapsed_time);
+	void Draw(const ViewRect& viewRect);
+
+	void Load();
+
+	bool IsEnable();
+	Circle GetCollision();
+	DirectX::XMFLOAT2 GetPosition();
+	DirectX::XMFLOAT2 GetSize();
+	void Destroy();
+};
 
 #endif // PLAYER_H

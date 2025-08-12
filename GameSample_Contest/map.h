@@ -13,6 +13,7 @@
 #include "camera.h"
 
 #include <DirectXMath.h>
+#include <string>
 
 using namespace DirectX;
 
@@ -35,9 +36,10 @@ public:
 	Map();
 	~Map();
 
-	void Initialize();
+	void Initialize(const std::string& filePath);
 	void Finalize();
 
+	bool LoadMapFromCSV(const std::string& filePath);
 	void Update(float elapsed_time);
 	void Draw(const ViewRect& viewRect);
 

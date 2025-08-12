@@ -1,13 +1,12 @@
-/*==============================================================================
-
-　 プレーヤー制御[player.cpp]
-                                                         Author : Youhei Sato
-                                                         Date   : 2025/06/27
---------------------------------------------------------------------------------
-
-==============================================================================*/
+// ==========================================================================================
+// 
+// File Name: player.cpp
+// Date: 2025/08/13
+// Author: Gu Anyi
+// Description: Manage the player character
+// 
+// ==========================================================================================
 #include "player.h"
-// 絵表示したいならこの二つ
 #include "sprite.h"
 #include "texture.h"
 #include "key_logger.h"
@@ -16,51 +15,53 @@
 #include "debug_text.h"
 
 #include <DirectXMath.h>
+
+
 using namespace DirectX;
 
-static constexpr float PLAYER_WIDTH  = 120.0f;
-static constexpr float PLAYER_HEIGHT = 132.0f;
-
-static XMFLOAT2 g_PlayerPosition = {};
-static XMFLOAT2 g_PlayerVelocity = {};
-static XMFLOAT2 g_PlayerSize = {};
-static bool g_PlayerFacingLeft; // 左に向かう
-static int g_PlayerTexid = -1;
-static Circle g_PlayerCollision = { { 60.0f, 66.0f }, 60.0f };
-static bool g_PlayerEnable = true;
-
-void Player_Initialize(const XMFLOAT2& position)
+Player::Player()
 {
-    g_PlayerPosition = position;
-    g_PlayerVelocity = { 0.0f, 0.0f };
-    g_PlayerSize = { PLAYER_WIDTH, PLAYER_HEIGHT };
-    g_PlayerFacingLeft = true;
-    g_PlayerEnable = true;
-
-    g_PlayerTexid = Texture_Load(L"resources/player.png");
+    playerPosition = {};
+    playerVelocity = {};
+    playerSize = {};
+    playerFlip = false;
+    playerTexId = -1;
+    playerCollision = { { 64.0f, 64.0f }, 64.0f };
+    playerEnable = true;
 }
 
-void Player_Finalize() // 多分いらない
+void Player::Initialize(const XMFLOAT2& position)
+{
+    playerPosition = position;
+    playerVelocity = { 0.0f, 0.0f };
+    playerSize = { 128.0f, 128.0f };
+    playerFlip = false;
+    playerEnable = true;
+
+    playerTexId = Texture_Load(L"resources/Santa_Claus.png");
+}
+
+void Player::Finalize()
 {
 }
 
-void Player_Update(double elapsed_time)
+void Player::Update(double elapsed_time)
 {
-    if (!g_PlayerEnable) return; // プレーヤーが死んだら戻す
+    if (!playerEnable) return; // プレーヤーが死んだら戻す
 
-    XMVECTOR position = XMLoadFloat2(&g_PlayerPosition);
-    XMVECTOR velocity = XMLoadFloat2(&g_PlayerVelocity);
+    XMVECTOR position = XMLoadFloat2(&playerPosition);
+    XMVECTOR velocity = XMLoadFloat2(&playerVelocity);
 
     XMVECTOR direction = {};
 
-    if (KeyLogger_IsPressed(KK_W)) // 全部ifを使う、方向判断
+    if (KeyLogger_IsPressed(KK_W)) //方向判断
     {
         direction += {0.0f, -1.0f};
     }
     if (KeyLogger_IsPressed(KK_A))
     {
         direction += {-1.0f, 0.0f};
-        g_PlayerFacingLeft = false;
+        playerFlip = true;
     }
     if (KeyLogger_IsPressed(KK_S))
     {
@@ -69,89 +70,85 @@ void Player_Update(double elapsed_time)
     if (KeyLogger_IsPressed(KK_D))
     {
         direction += {1.0f, 0.0f};
-        g_PlayerFacingLeft = true;
+        playerFlip = false;
     }
 
-    direction = XMVector2Normalize(direction); // 単位ベクトルになる
+    direction = XMVector2Normalize(direction); // 単位ベクトル
 
-    // position += direction * 3.0f; // 減速の効果がないやり方
-
-    /*
-    // 固定フレームのやり方
-    velocity += direction * 1.0f;
-    position += velocity;
-    velocity *= 0.9f;
-    */
-
-    // 物理シミュレーションのやり方、どんなフレームでも同じ速度が出る
     velocity += direction * 6000000.0f / 2500.0f * elapsed_time; // 力(単位：ニュートン)、600万ニュートンの力 / 2500の重さ（単位：キロ）
     position += velocity * elapsed_time; // 演算過程、elapsed_timeを使って積分する
     velocity += -velocity * 4.0f * elapsed_time; // 止まる効果
 
-    XMStoreFloat2(&g_PlayerPosition, position);
-    XMStoreFloat2(&g_PlayerVelocity, velocity);
+    XMStoreFloat2(&playerPosition, position);
+    XMStoreFloat2(&playerVelocity, velocity);
 
-    // マップの範囲で囲まれてる
-    if (g_PlayerPosition.x <= 0.0f)
+    // マップの範囲：1920 * 3200
+    if (playerPosition.x <= 0.0f)
     {
-        g_PlayerPosition.x = 0.0f;
+        playerPosition.x = 0.0f;
     }
-    if (g_PlayerPosition.x >= (3200.0f - g_PlayerSize.x))
+    if (playerPosition.x >= (3200.0f - playerSize.x))
     {
-        g_PlayerPosition.x = 3200.0f - g_PlayerSize.x;
+        playerPosition.x = 3200.0f - playerSize.x;
     }
-    if (g_PlayerPosition.y <= 0.0f)
+    if (playerPosition.y <= 0.0f)
     {
-        g_PlayerPosition.y = 0.0f;
+        playerPosition.y = 0.0f;
     }
-    if (g_PlayerPosition.y >= (1920.0f - g_PlayerSize.y))
+    if (playerPosition.y >= (1920.0f - playerSize.y))
     {
-        g_PlayerPosition.y = 1920.0f - g_PlayerSize.y;
+        playerPosition.y = 1920.0f - playerSize.y;
     }
 
     // 弾を発射する
     if (KeyLogger_IsTrigger(KK_SPACE))
     {
-        Bullet_Create({ g_PlayerPosition.x + g_PlayerSize.x * 0.5f, g_PlayerPosition.y + g_PlayerSize.y * 0.5f }, g_PlayerFacingLeft);
+        Bullet_Create({ playerPosition.x + playerSize.x * 0.5f, playerPosition.y + playerSize.y * 0.5f }, playerFlip);
     }
 }
 
-void Player_Draw(const ViewRect& viewRect)
+void Player::Draw(const ViewRect& viewRect)
 {
-    if (!g_PlayerEnable) return;
+    if (!playerEnable) return;
     
     // NOTICE: IN THE SCREEN SPACE!!!
     Sprite_Draw(
-        g_PlayerTexid,
-        g_PlayerPosition.x - viewRect.rectPosition.x, g_PlayerPosition.y - viewRect.rectPosition.y,
-        g_PlayerSize.x, g_PlayerSize.y,
-        g_PlayerFacingLeft
+        playerTexId,
+        playerPosition.x - viewRect.rectPosition.x, playerPosition.y - viewRect.rectPosition.y,
+        0.0f, 128.0f,
+        playerSize.x, playerSize.y,
+        playerFlip
     );
 }
 
-void Player_Load()
+void Player::Load()
 {
 }
 
-bool Player_IsEnable()
+bool Player::IsEnable()
 {
-    return g_PlayerEnable;
+    return playerEnable;
 }
 
-Circle Player_GetCollision()
+Circle Player::GetCollision()
 {
-    float cx = g_PlayerPosition.x + g_PlayerCollision.center.x;
-    float cy = g_PlayerPosition.y + g_PlayerCollision.center.y;
+    float cx = playerPosition.x + playerCollision.center.x;
+    float cy = playerPosition.y + playerCollision.center.y;
 
-    return { { cx, cy }, g_PlayerCollision.radius };
+    return { { cx, cy }, playerCollision.radius };
 }
 
-XMFLOAT2 Player_GetPosition()
+XMFLOAT2 Player::GetPosition()
 {
-    return g_PlayerPosition;
+    return playerPosition;
 }
 
-void Player_Destroy()
+DirectX::XMFLOAT2 Player::GetSize()
 {
-    g_PlayerEnable = false;
+    return playerSize;
+}
+
+void Player::Destroy()
+{
+    playerEnable = false;
 }

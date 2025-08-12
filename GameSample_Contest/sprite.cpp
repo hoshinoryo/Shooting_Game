@@ -29,12 +29,12 @@ static ID3D11DeviceContext* g_pContext = nullptr;
 
 
 // 頂点構造体（GPUに渡す頂点データの定義）
-struct Vertex
-{
-	XMFLOAT3 position; // 頂点座標
-	XMFLOAT4 color;    // 色（r, g, b, a）→ ピクセルシェーダーにそのまま渡される
-	XMFLOAT2 uv;       // UV
-};
+//struct Vertex
+//{
+//	XMFLOAT3 position; // 頂点座標
+//	XMFLOAT4 color;    // 色（r, g, b, a）→ ピクセルシェーダーにそのまま渡される
+//	XMFLOAT2 uv;       // UV
+//};
 
 
 void Sprite_Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -103,20 +103,7 @@ void Sprite_Draw(int texid, float dx, float dy,
 	v[2].color = color;
 	v[3].color = color;
 
-	if (!isFlipX)
-	{
-		v[0].uv = { 0.0f, 0.0f };
-		v[1].uv = { 1.0f, 0.0f };
-		v[2].uv = { 0.0f, 1.0f };
-		v[3].uv = { 1.0f, 1.0f };
-	}
-	else
-	{
-		v[0].uv = { 1.0f, 0.0f };
-		v[1].uv = { 0.0f, 0.0f };
-		v[2].uv = { 1.0f, 1.0f };
-		v[3].uv = { 0.0f, 1.0f };
-	}
+	Sprite_UVFlip(v, 0.0f, 1.0f, 0.0f, 1.0f, isFlipX);
 
 	// 頂点バッファのロックを解除
 	g_pContext->Unmap(g_pVertexBuffer, 0);
@@ -140,10 +127,10 @@ void Sprite_Draw(int texid, float dx, float dy,
 
 }
 
+// UV mapping is not required
 void Sprite_Draw(int texid, float dx, float dy, float dw, float dh,
 	bool isFlipX, const XMFLOAT4& color)
 {
-	// シェーダーを描画パイプラインに設定
 	Shader_Begin();
 
 	// 頂点バッファをロックする
@@ -153,7 +140,6 @@ void Sprite_Draw(int texid, float dx, float dy, float dw, float dh,
 	// 頂点バッファへの仮想ポインタを取得
 	Vertex* v = (Vertex*)msr.pData;
 
-	// 画面の左上から右下に向かう線分を描画する
 	v[0].position = { dx,      dy,     0.0f };
 	v[1].position = { dx + dw, dy,     0.0f };
 	v[2].position = { dx ,     dy + dh, 0.0f };
@@ -164,20 +150,7 @@ void Sprite_Draw(int texid, float dx, float dy, float dw, float dh,
 	v[2].color = color;
 	v[3].color = color;
 
-	if (!isFlipX)
-	{
-		v[0].uv = { 0.0f, 0.0f };
-		v[1].uv = { 1.0f, 0.0f };
-		v[2].uv = { 0.0f, 1.0f };
-		v[3].uv = { 1.0f, 1.0f };
-	}
-	else
-	{
-		v[0].uv = { 1.0f, 0.0f };
-		v[1].uv = { 0.0f, 0.0f };
-		v[2].uv = { 1.0f, 1.0f };
-		v[3].uv = { 0.0f, 1.0f };
-	}
+	Sprite_UVFlip(v, 0.0f, 1.0f, 0.0f, 1.0f, isFlipX);
 
 	// 頂点バッファのロックを解除
 	g_pContext->Unmap(g_pVertexBuffer, 0);
@@ -200,6 +173,7 @@ void Sprite_Draw(int texid, float dx, float dy, float dw, float dh,
 	g_pContext->Draw(NUM_VERTEX, 0);
 }
 
+// UV mapping is required
 void Sprite_Draw(int texid, float dx, float dy, int px, int py, int pw, int ph,
 	bool isFlipX, const XMFLOAT4& color)
 {
@@ -234,21 +208,7 @@ void Sprite_Draw(int texid, float dx, float dy, int px, int py, int pw, int ph,
 	float u1 = (px + pw) / tw;
 	float v1 = (py + ph) / th;
 
-	// 画面の左上uv値は(0, 0)、右下は(1, 1)
-	if (!isFlipX)
-	{
-		v[0].uv = { u0, v0 };
-		v[1].uv = { u1, v0 };
-		v[2].uv = { u0, v1 };
-		v[3].uv = { u1, v1 };
-	}
-	else // 左右反転
-	{
-		v[0].uv = { u1, v0 };
-		v[1].uv = { u0, v0 };
-		v[2].uv = { u1, v1 };
-		v[3].uv = { u0, v1 };
-	}
+	Sprite_UVFlip(v, u0, u1, v0, v1, isFlipX);
 
 	// 頂点バッファのロックを解除
 	g_pContext->Unmap(g_pVertexBuffer, 0);
@@ -305,20 +265,7 @@ void Sprite_Draw(int texid, float dx, float dy, float dw, float dh, int px, int 
 	float u1 = (px + pw) / tw;
 	float v1 = (py + ph) / th;
 
-	if (!isFlipX)
-	{
-		v[0].uv = { u0, v0 };
-		v[1].uv = { u1, v0 };
-		v[2].uv = { u0, v1 };
-		v[3].uv = { u1, v1 };
-	}
-	else // 左右反転
-	{
-		v[0].uv = { u1, v0 };
-		v[1].uv = { u0, v0 };
-		v[2].uv = { u1, v1 };
-		v[3].uv = { u0, v1 };
-	}
+	Sprite_UVFlip(v, u0, u1, v0, v1, isFlipX);
 
 	// 頂点バッファのロックを解除
 	g_pContext->Unmap(g_pVertexBuffer, 0);
@@ -407,4 +354,22 @@ void Sprite_Draw(int texid, float dx, float dy, float dw, float dh, int px, int 
 
 	// ポリゴン描画命令発行
 	g_pContext->Draw(NUM_VERTEX, 0);
+}
+
+void Sprite_UVFlip(Vertex* v, float u0, float u1, float v0, float v1, bool isFlipX)
+{
+	if (!isFlipX)
+	{
+		v[0].uv = { u0, v0 };
+		v[1].uv = { u1, v0 };
+		v[2].uv = { u0, v1 };
+		v[3].uv = { u1, v1 };
+	}
+	else // 左右反転
+	{
+		v[0].uv = { u1, v0 };
+		v[1].uv = { u0, v0 };
+		v[2].uv = { u1, v1 };
+		v[3].uv = { u0, v1 };
+	}
 }

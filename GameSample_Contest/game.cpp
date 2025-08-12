@@ -22,18 +22,28 @@
 #include "debug_ostream.h"
 
 #include <iostream>
+#include <string>
 
-Map testMap;
+Map testMapMg;
+Map testMapFg;
+Player testPlayer;
+std::string mg_filePath = "resources/Tiled_Project/output/test_map_mg.csv";
+std::string fg_filePath = "resources/Tiled_Project/output/test_map_fg.csv";
+
 Camera testCam;
 
 
 void Game_Initialize()
-{
-    testMap.Initialize();
-    testCam.Initialize(Direct3D_GetBackBufferWidth(), Direct3D_GetBackBufferHeight(),
-        (float)testMap.GetMapWidth(), (float)testMap.GetMapHeight());
+{   
+    // Map Initialization
+    testMapMg.Initialize(mg_filePath);
+    testMapFg.Initialize(fg_filePath);
 
-    Player_Initialize({ Direct3D_GetBackBufferWidth() * 0.5f, Direct3D_GetBackBufferHeight() * 0.5f});
+    // Camera Initialization
+    testCam.Initialize(Direct3D_GetBackBufferWidth(), Direct3D_GetBackBufferHeight(),
+        (float)testMapMg.GetMapWidth(), (float)testMapMg.GetMapHeight());
+
+    testPlayer.Initialize({ Direct3D_GetBackBufferWidth() * 0.5f, Direct3D_GetBackBufferHeight() * 0.5f});
     Bullet_Initialize();
     //Enemy_Initialize();
     //EnemySpawner_Initialize();
@@ -53,10 +63,11 @@ void Game_Finalize()
     //EnemySpawner_Finalize();
     //Enemy_Finalize();
     Bullet_Finalize();
-    Player_Finalize();
+    testPlayer.Finalize();
 
     testCam.Finalize();
-    testMap.Finalize();
+    testMapFg.Finalize();
+    testMapMg.Finalize();
 }
 
 void Game_Update(double elapsed_time)
@@ -66,8 +77,8 @@ void Game_Update(double elapsed_time)
     Bullet_Update(elapsed_time);
     //Enemy_Update(elapsed_time);
 
-    Player_Update(elapsed_time);
-    testCam.Update(Player_GetPosition());
+    testPlayer.Update(elapsed_time);
+    testCam.Update(testPlayer.GetPosition());
 
     hitJudgementBulletVSEnemy();
     hitJudgementPlayerVSEnemy();
@@ -75,19 +86,22 @@ void Game_Update(double elapsed_time)
     Effect_Update(elapsed_time);
 
 #if defined(DEBUG) || defined(_DEBUG)
-    hal::dout << "Player position: " << Player_GetPosition().x << ", " << Player_GetPosition().y << std::endl;
+    hal::dout << "Player position: " << testPlayer.GetPosition().x << ", " << testPlayer.GetPosition().y << std::endl;
     hal::dout << "Camera Position: " << testCam.GetX() << ", " << testCam.GetY() << std::endl;
-    hal::dout << "Delta: " << (Player_GetPosition().x - testCam.GetX() - Direct3D_GetBackBufferWidth() * 0.5f) << std::endl;
+    hal::dout << "Delta: " << (testPlayer.GetPosition().x - testCam.GetX() - Direct3D_GetBackBufferWidth() * 0.5f) << std::endl;
 #endif
 }
 
 void Game_Draw()
 {
 	BG_Draw();
-    testMap.Draw(testCam.GetViewRect());
+
+    // Map Draw
+    testMapMg.Draw(testCam.GetViewRect());
+    testMapFg.Draw(testCam.GetViewRect());
 
     Bullet_Draw();
-    Player_Draw(testCam.GetViewRect());
+    testPlayer.Draw(testCam.GetViewRect());
 
     //Enemy_Draw();
     Effect_Draw();
@@ -117,18 +131,18 @@ void hitJudgementBulletVSEnemy()
 
 void hitJudgementPlayerVSEnemy()
 {
-    if (!Player_IsEnable()) return;
+    if (!testPlayer.IsEnable()) return;
 
     for (int ei = 0; ei < ENEMIES_MAX; ei++)
     {
         if (!Enemy_IsEnable(ei)) continue;
 
         if (Collision_OverlapCircle(
-            Player_GetCollision(),
+            testPlayer.GetCollision(),
             Enemy_GetCollision(ei)
         )) // ƒqƒbƒg‚³‚ê‚½‚ç
         {
-            Player_Destroy();
+            testPlayer.Destroy();
             Enemy_Destroy(ei);
         }
     }

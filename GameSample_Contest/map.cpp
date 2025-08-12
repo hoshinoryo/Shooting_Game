@@ -21,7 +21,7 @@
 Map::Map()
 {
 	mapTexId = -1;
-	std::fill(std::begin(mapArray), std::end(mapArray), 0);
+	std::fill(std::begin(mapArray), std::end(mapArray), -1); // default are all -1
 	mapWidth = MAPCHIP_WIDTH * MAP_H_COUNT;
 	mapHeight = MAPCHIP_HEIGHT * MAP_V_COUNT;
 }
@@ -30,15 +30,26 @@ Map::~Map()
 {
 }
 
-void Map::Initialize()
+void Map::Initialize(const std::string& filePath)
 {
 	mapTexId = Texture_Load(L"resources/Christmass_Grass.png");
 
-	// Import tiled csv file
-	std::ifstream map_file("resources/Tiled_Project/output/test_map_mg.csv");
-	if (!map_file)
+	if (!LoadMapFromCSV(filePath))
 	{
 		MessageBox(nullptr, "マップファイルの読み込みに失敗しました", "Error", MB_OK);
+	}
+}
+
+void Map::Finalize()
+{
+}
+
+bool Map::LoadMapFromCSV(const std::string& filePath)
+{
+	std::ifstream map_file(filePath);
+	if (!map_file)
+	{
+		return false;
 	}
 
 	std::string line;
@@ -53,10 +64,8 @@ void Map::Initialize()
 			mapArray[index++] = std::stoi(cell);
 		}
 	}
-}
 
-void Map::Finalize()
-{
+	return true;
 }
 
 void Map::Update(float elapsed_time)
@@ -79,6 +88,7 @@ void Map::Draw(const ViewRect& viewRect)
 	int horizontalCount = static_cast<int>(viewRect.rectWidth / MAPCHIP_WIDTH) + 2;
 	int verticalCount = static_cast<int>(viewRect.rectHeight / MAPCHIP_HEIGHT) + 2;
 
+	// Map chip drawing
 	for (int y = 0; y < verticalCount; y++)
 	{
 		for (int x = 0; x < horizontalCount; x++)
@@ -89,6 +99,8 @@ void Map::Draw(const ViewRect& viewRect)
 			if (mapX < 0 || mapX >= MAP_H_COUNT || mapY < 0 || mapY >= MAP_V_COUNT) continue;
 
 			int chipId = mapArray[mapY * MAP_H_COUNT + mapX];
+
+			if (chipId == -1) continue;
 
 			// Map chip position in screen space
 			float chipPosX = (float)(x * MAPCHIP_WIDTH) + localOffsetX;
