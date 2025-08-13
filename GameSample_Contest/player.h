@@ -28,13 +28,14 @@ class Player
 {
 private:
 
-	DirectX::XMFLOAT2 playerPosition;
+	DirectX::XMFLOAT2 playerWorldPosition;
+	DirectX::XMFLOAT2 playerScreenPosition;
 	DirectX::XMFLOAT2 playerVelocity;
 	DirectX::XMFLOAT2 playerSize;
 	bool playerFlip;
 	int playerTexId;
 	int playerAnimPlayId;
-	Circle playerCollision;
+	Circle playerCircleCollision;
 	bool playerEnable;
 	Status playerStatus;
 
@@ -44,14 +45,21 @@ public:
 	void Initialize(const DirectX::XMFLOAT2& position);
 	void Finalize();
 
-	void Update(double elapsed_time);
-	void Draw(const ViewRect& viewRect);
+	void Update(double elapsed_time, const ViewRect& viewRect);
+	void Draw();
 	void ChangeStatus(Status newPlayerStatus);
 
 	bool IsEnable();
-	Circle GetCollision();
-	DirectX::XMFLOAT2 GetPosition();
+
+	void SetScreenPosition(const ViewRect& viewRect);
+
+	Circle GetCircleCollision();
+	Box GetBoxCollision();
+
+	DirectX::XMFLOAT2 GetWorldPosition();
+	DirectX::XMFLOAT2 GetScreenPosition();
 	DirectX::XMFLOAT2 GetSize();
+
 	void Destroy();
 };
 

@@ -18,6 +18,8 @@
 #include <string>
 
 
+// Map class
+
 Map::Map()
 {
 	mapTexId = -1;
@@ -114,3 +116,85 @@ void Map::Draw(const ViewRect& viewRect)
 	}
 }
 
+
+// Collision_Map class
+
+Collision_Map::Collision_Map()
+{
+	mapTexId = -1;
+	std::fill(std::begin(mapArray), std::end(mapArray), -1);
+	mapWidth = MAPCHIP_WIDTH * MAP_H_COUNT;
+	mapHeight = MAPCHIP_HEIGHT * MAP_V_COUNT;
+
+	chipBoxCollision = { {32.0f, 32.0f}, 32.0f, 32.0f };
+}
+
+
+void Collision_Map::Initialize(const std::string& filePath)
+{
+	mapTexId = Texture_Load(L"resources/Collision.png");
+
+	if (!LoadMapFromCSV(filePath))
+	{
+		MessageBox(nullptr, "マップファイルの読み込みに失敗しました", "Error", MB_OK);
+	}
+}
+
+void Collision_Map::Draw(const ViewRect& viewRect)
+{
+	float offsetX = viewRect.rectPosition.x / MAPCHIP_WIDTH;
+	float offsetY = viewRect.rectPosition.y / MAPCHIP_HEIGHT;
+
+	int tileOffsetX = static_cast<int>(offsetX);
+	int tileOffsetY = static_cast<int>(offsetY);
+
+	float localOffsetX = -(viewRect.rectPosition.x - tileOffsetX * MAPCHIP_WIDTH);
+	float localOffsetY = -(viewRect.rectPosition.y - tileOffsetY * MAPCHIP_HEIGHT);
+
+	int horizontalCount = static_cast<int>(viewRect.rectWidth / MAPCHIP_WIDTH) + 2;
+	int verticalCount = static_cast<int>(viewRect.rectHeight / MAPCHIP_HEIGHT) + 2;
+
+	for (int y = 0; y < verticalCount; y++)
+	{
+		for (int x = 0; x < horizontalCount; x++)
+		{
+			int mapX = offsetX + x;
+			int mapY = offsetY + y;
+
+			if (mapX < 0 || mapX >= MAP_H_COUNT || mapY < 0 || mapY >= MAP_V_COUNT) continue;
+
+			int chipId = mapArray[mapY * MAP_H_COUNT + mapX];
+
+			if (chipId == -1) continue;
+
+			float chipPosX = (float)(x * MAPCHIP_WIDTH) + localOffsetX;
+			float chipPosY = (float)(y * MAPCHIP_HEIGHT) + localOffsetY;
+
+			int chipIndexX = chipId % 8;
+			int chipIndexY = chipId / 8;
+
+			Sprite_Draw(mapTexId, chipPosX, chipPosY, MAPCHIP_WIDTH, MAPCHIP_HEIGHT, 64 * chipIndexX, 64 * chipIndexY, 64.0f, 64.0f);
+
+#if defined(DEBUG) || defined(_DEBUG)
+			if (chipId != -1)
+			{
+				Collision_DebugDraw(GetChipBoxCollision(chipPosX, chipPosY));
+			}
+#endif
+		}
+	}
+}
+
+Box Collision_Map::GetChipBoxCollision(float chipPosX, float chipPosY)
+{
+	Box chipCollision = {
+		{chipBoxCollision.center.x + chipPosX, chipBoxCollision.center.y + chipPosY},
+		chipBoxCollision.half_width, chipBoxCollision.half_height
+	};
+	return chipCollision;
+}
+
+bool Collision_Map::MapCollision()
+{
+	return false;
+}

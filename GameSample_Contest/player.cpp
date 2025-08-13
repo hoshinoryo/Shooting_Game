@@ -24,13 +24,14 @@ static constexpr float PLAYER_ANIM_PLAY_RATE = 0.08f;
 
 Player::Player()
 {
-    playerPosition = {};
+    playerWorldPosition = {};
+    playerScreenPosition = {};
     playerVelocity = {};
     playerSize = {};
     playerFlip = false;
     playerTexId = -1;
     playerAnimPlayId = -1;
-    playerCollision = { { 64.0f, 64.0f }, 64.0f };
+    playerCircleCollision = { { 64.0f, 92.0f }, 20.0f };
     playerEnable = true;
     playerStatus = none;
 }
@@ -38,7 +39,8 @@ Player::Player()
 void Player::Initialize(const XMFLOAT2& position)
 {
 
-    playerPosition = position;
+    playerWorldPosition = position;
+    playerScreenPosition = {};
     playerVelocity = { 0.0f, 0.0f };
     playerSize = { 128.0f, 128.0f };
     playerFlip = false;
@@ -51,11 +53,11 @@ void Player::Finalize()
 {
 }
 
-void Player::Update(double elapsed_time)
+void Player::Update(double elapsed_time, const ViewRect& viewRect)
 {
     if (!playerEnable) return; // プレーヤーが死んだら戻す
 
-    XMVECTOR position = XMLoadFloat2(&playerPosition);
+    XMVECTOR position = XMLoadFloat2(&playerWorldPosition);
     XMVECTOR velocity = XMLoadFloat2(&playerVelocity);
 
     XMVECTOR direction = {};
@@ -92,48 +94,56 @@ void Player::Update(double elapsed_time)
     direction = XMVector2Normalize(direction); // 単位ベクトル
 
     velocity += direction * 6000000.0f / 2500.0f * elapsed_time; // 力(単位：ニュートン)、600万ニュートンの力 / 2500の重さ（単位：キロ）
-    position += velocity * elapsed_time; // 演算過程、elapsed_timeを使って積分する
-    velocity += -velocity * 4.0f * elapsed_time; // 止まる効果
+    position += velocity * elapsed_time;
+    velocity += -velocity * 6.0f * elapsed_time;
 
-    XMStoreFloat2(&playerPosition, position);
+    XMStoreFloat2(&playerWorldPosition, position);
     XMStoreFloat2(&playerVelocity, velocity);
 
     // マップの範囲：1920 * 3200
-    if (playerPosition.x <= 0.0f)
+    if (playerWorldPosition.x <= 0.0f)
     {
-        playerPosition.x = 0.0f;
+        playerWorldPosition.x = 0.0f;
     }
-    if (playerPosition.x >= (3200.0f - playerSize.x))
+    if (playerWorldPosition.x >= (3200.0f - playerSize.x))
     {
-        playerPosition.x = 3200.0f - playerSize.x;
+        playerWorldPosition.x = 3200.0f - playerSize.x;
     }
-    if (playerPosition.y <= 0.0f)
+    if (playerWorldPosition.y <= 0.0f)
     {
-        playerPosition.y = 0.0f;
+        playerWorldPosition.y = 0.0f;
     }
-    if (playerPosition.y >= (1920.0f - playerSize.y))
+    if (playerWorldPosition.y >= (1920.0f - playerSize.y))
     {
-        playerPosition.y = 1920.0f - playerSize.y;
+        playerWorldPosition.y = 1920.0f - playerSize.y;
     }
+
+    SetScreenPosition(viewRect);
 
     // 弾を発射する
     if (KeyLogger_IsTrigger(KK_SPACE))
     {
-        Bullet_Create({ playerPosition.x + playerSize.x * 0.5f, playerPosition.y + playerSize.y * 0.5f }, playerFlip);
+        Bullet_Create({ playerWorldPosition.x + playerSize.x * 0.5f, playerWorldPosition.y + playerSize.y * 0.5f }, playerFlip);
     }
 }
 
 // NOTICE: IN THE SCREEN SPACE!!!
 
-void Player::Draw(const ViewRect& viewRect)
+void Player::Draw()
 {
     if (!playerEnable) return;
 
     SpriteAnim_Draw(
-        playerAnimPlayId,
-        playerPosition.x - viewRect.rectPosition.x, playerPosition.y - viewRect.rectPosition.y,
+        playerAnimPlayId, playerScreenPosition.x, playerScreenPosition.y,
         playerSize.x, playerSize.y, playerFlip
     );
+
+#if defined(DEBUG) || defined(_DEBUG)
+
+    Collision_DebugDraw(GetCircleCollision());
+    //Collision_DebugDraw(GetBoxCollision());
+
+#endif
 }
 
 void Player::ChangeStatus(Status newPlayerStatus)
@@ -209,20 +219,38 @@ bool Player::IsEnable()
     return playerEnable;
 }
 
-Circle Player::GetCollision()
+void Player::SetScreenPosition(const ViewRect& viewRect)
 {
-    float cx = playerPosition.x + playerCollision.center.x;
-    float cy = playerPosition.y + playerCollision.center.y;
-
-    return { { cx, cy }, playerCollision.radius };
+    playerScreenPosition.x = playerWorldPosition.x - viewRect.rectPosition.x;
+    playerScreenPosition.y = playerWorldPosition.y - viewRect.rectPosition.y;
 }
 
-XMFLOAT2 Player::GetPosition()
+Circle Player::GetCircleCollision()
 {
-    return playerPosition;
+    float cx = playerScreenPosition.x + playerCircleCollision.center.x;
+    float cy = playerScreenPosition.y + playerCircleCollision.center.y;
+
+    return { { cx, cy }, playerCircleCollision.radius };
 }
 
-DirectX::XMFLOAT2 Player::GetSize()
+Box Player::GetBoxCollision()
+{
+    float half_width = playerSize.x * 0.5f;
+    float half_height = playerSize.y * 0.5f;
+    return { {playerScreenPosition.x + half_width, playerScreenPosition.y + half_height}, half_width, half_height };
+}
+
+XMFLOAT2 Player::GetWorldPosition()
+{
+    return playerWorldPosition;
+}
+
+XMFLOAT2 Player::GetScreenPosition()
+{
+    return playerScreenPosition;
+}
+
+XMFLOAT2 Player::GetSize()
 {
     return playerSize;
 }

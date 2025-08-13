@@ -26,8 +26,10 @@
 
 Map testMapMg;
 Map testMapFg;
+Collision_Map testCollision;
 std::string mg_filePath = "resources/Tiled_Project/output/test_map_mg.csv";
 std::string fg_filePath = "resources/Tiled_Project/output/test_map_fg.csv";
+std::string col_filePath = "resources/Tiled_Project/output/test_map_collisions.csv";
 
 Player testPlayer;
 Camera testCam;
@@ -38,6 +40,7 @@ void Game_Initialize()
     // Map Initialization
     testMapMg.Initialize(mg_filePath);
     testMapFg.Initialize(fg_filePath);
+    testCollision.Initialize(col_filePath);
 
     // Camera Initialization
     testCam.Initialize(
@@ -68,6 +71,7 @@ void Game_Finalize()
     testPlayer.Finalize();
 
     testCam.Finalize();
+    testCollision.Finalize();
     testMapFg.Finalize();
     testMapMg.Finalize();
 }
@@ -79,8 +83,8 @@ void Game_Update(double elapsed_time)
     Bullet_Update(elapsed_time);
     //Enemy_Update(elapsed_time);
 
-    testPlayer.Update(elapsed_time);
-    testCam.Update(testPlayer.GetPosition());
+    testPlayer.Update(elapsed_time, testCam.GetViewRect());
+    testCam.Update(testPlayer.GetWorldPosition());
 
     hitJudgementBulletVSEnemy();
     hitJudgementPlayerVSEnemy();
@@ -103,9 +107,10 @@ void Game_Draw()
     // Map Draw
     testMapMg.Draw(testCam.GetViewRect());
     testMapFg.Draw(testCam.GetViewRect());
+    testCollision.Draw(testCam.GetViewRect());
 
     Bullet_Draw();
-    testPlayer.Draw(testCam.GetViewRect());
+    testPlayer.Draw();
 
     //Enemy_Draw();
     Effect_Draw();
@@ -142,7 +147,7 @@ void hitJudgementPlayerVSEnemy()
         if (!Enemy_IsEnable(ei)) continue;
 
         if (Collision_OverlapCircle(
-            testPlayer.GetCollision(),
+            testPlayer.GetCircleCollision(),
             Enemy_GetCollision(ei)
         )) // ƒqƒbƒg‚³‚ê‚½‚ç
         {

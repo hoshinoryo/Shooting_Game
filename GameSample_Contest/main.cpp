@@ -17,6 +17,7 @@
 #include "mouse.h"
 #include "key_logger.h"
 #include "game.h"
+#include "collision.h"
 
 #pragma comment(lib, "xinput.lib")
 
@@ -65,6 +66,7 @@ int APIENTRY WinMain(
 		0.0f, 16.0f);
 
 	Mouse_SetVisible(true);
+	Collision_DebugInitialize(Direct3D_GetDevice(), Direct3D_GetContext());
 
 	ShowWindow(hWnd, nCmdShow); // ウィンドウ表示
 	UpdateWindow(hWnd); // ウィンドウの中を更新する
@@ -134,6 +136,8 @@ int APIENTRY WinMain(
 
 	} while (msg.message != WM_QUIT);
 	
+	Collision_DebugFinalize();
+
 	Game_Finalize();
 
 	Polygon_Finalize();
