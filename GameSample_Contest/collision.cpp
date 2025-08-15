@@ -3,7 +3,7 @@
 // File Name: collision.cpp
 // Date: 2025/08/13
 // Author: Gu Anyi
-// Description: Manage collision definitions and the debug mode 
+// Description: Manage collision check and the debug mode 
 // 
 // ==========================================================================================
 #include "collision.h"
@@ -32,7 +32,7 @@ struct Vertex
 };
 
 
-bool Collision_OverlapCircle(const Circle& a, const Circle& b)
+bool Collision_CheckCircle(const Circle& a, const Circle& b)
 {
     float x1 = b.center.x - a.center.x;
     float y1 = b.center.y - a.center.y;
@@ -40,7 +40,7 @@ bool Collision_OverlapCircle(const Circle& a, const Circle& b)
     return (x1 * x1 + y1 * y1) < (a.radius + b.radius) * (a.radius + b.radius);
 }
 
-bool Collision_OverlapBox(const Box& a, const Box& b)
+bool Collision_CheckBox(const Box& a, const Box& b)
 {
     float at = a.center.y - a.half_height;
     float ab = a.center.y + a.half_height;
@@ -75,7 +75,7 @@ void Collision_DebugFinalize()
     SAFE_RELEASE(g_pVertexBuffer);
 }
 
-void Collision_DebugDraw(const Circle& circle, const DirectX::XMFLOAT4& color)
+void Collision_DebugDraw(const Circle& circle, const XMFLOAT4& color)
 {
 	int NumVertex = (int)circle.radius * 2.0f * XM_PI + 1;
 
@@ -112,7 +112,7 @@ void Collision_DebugDraw(const Circle& circle, const DirectX::XMFLOAT4& color)
 	g_pContext->Draw(NumVertex, 0);
 }
 
-void Collision_DebugDraw(const Box& box, const DirectX::XMFLOAT4& color)
+void Collision_DebugDraw(const Box& box, const XMFLOAT4& color)
 {
 	int NumVertex = 5;
 

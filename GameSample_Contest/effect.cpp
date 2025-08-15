@@ -32,7 +32,7 @@ void Effect_Initialize()
         e.isEnable = false;
     }
 
-    g_EffectTexId = Texture_Load(L"resources/explosion_2.png");
+    g_EffectTexId = Texture_Load(L"resources/explosion.png");
     g_AnimPatternId = SpriteAnim_RegisterPattern(g_EffectTexId, 16, 4, 0.08, { 200, 200 }, {0, 0}, false);
 }
 

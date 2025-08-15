@@ -25,8 +25,8 @@ struct Box
     float half_height;
 };
 
-bool Collision_OverlapCircle(const Circle& a, const Circle& b);
-bool Collision_OverlapBox(const Box& a, const Box& b);
+bool Collision_CheckCircle(const Circle& a, const Circle& b);
+bool Collision_CheckBox(const Box& a, const Box& b);
 
 // debug drawing
 void Collision_DebugInitialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

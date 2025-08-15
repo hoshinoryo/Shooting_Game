@@ -48,7 +48,6 @@ void Camera::Update(const XMFLOAT2& target)
 	if (position.y + screenHeight > mapHeight) position.y = mapHeight - screenHeight;
 }
 
-// 
 ViewRect Camera::GetViewRect() const
 {
 	return ViewRect{ position, screenWidth, screenHeight };

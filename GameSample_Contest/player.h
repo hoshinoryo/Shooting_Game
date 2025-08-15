@@ -11,6 +11,7 @@
 
 #include "collision.h"
 #include "camera.h"
+#include "map.h"
 
 #include <DirectXMath.h>
 
@@ -36,22 +37,25 @@ private:
 	int playerTexId;
 	int playerAnimPlayId;
 	Circle playerCircleCollision;
+	Box playerBoxCollision;
 	bool playerEnable;
 	Status playerStatus;
 
 public:
+
 	Player();
 
 	void Initialize(const DirectX::XMFLOAT2& position);
 	void Finalize();
 
-	void Update(double elapsed_time, const ViewRect& viewRect);
-	void Draw();
+	void UpdatePosition(double elapsed_time, Collision_Map& map, const ViewRect& viewRect);
+	void UpdateStatus();
 	void ChangeStatus(Status newPlayerStatus);
+	
+	//void Update(double elapsed_time, const ViewRect& viewRect);
+	void Draw();
 
-	bool IsEnable();
-
-	void SetScreenPosition(const ViewRect& viewRect);
+	bool GetIsEnable();
 
 	Circle GetCircleCollision();
 	Box GetBoxCollision();
@@ -59,6 +63,9 @@ public:
 	DirectX::XMFLOAT2 GetWorldPosition();
 	DirectX::XMFLOAT2 GetScreenPosition();
 	DirectX::XMFLOAT2 GetSize();
+	
+	void SetWorldPosition(DirectX::XMFLOAT2& position);
+	void SetScreenPosition(const ViewRect& viewRect);
 
 	void Destroy();
 };

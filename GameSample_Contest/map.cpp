@@ -185,6 +185,26 @@ void Collision_Map::Draw(const ViewRect& viewRect)
 	}
 }
 
+int Collision_Map::GetWorldToMapX(float x)
+{
+	return (int)(x / MAPCHIP_WIDTH) + (x < 0 ? -1 : 0);
+}
+
+int Collision_Map::GetWorldToMapY(float y)
+{
+	return (int)(y / MAPCHIP_HEIGHT) + (y < 0 ? -1 : 0);
+}
+
+int Collision_Map::GetMapChip(int map_x, int map_y)
+{
+	if (map_x < 0) map_x = 0;
+	if (map_x >= MAP_H_COUNT) map_x = MAP_H_COUNT - 1;
+	if (map_y < 0) map_y = 0;
+	if (map_y >= MAP_V_COUNT) map_y = MAP_V_COUNT - 1;
+
+	return mapArray[map_x + map_y * MAP_H_COUNT];
+}
+
 Box Collision_Map::GetChipBoxCollision(float chipPosX, float chipPosY)
 {
 	Box chipCollision = {

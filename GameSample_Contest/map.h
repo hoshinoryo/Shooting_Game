@@ -63,6 +63,10 @@ public:
 	void Initialize(const std::string& filePath);
 	void Draw(const ViewRect& viewRect);
 
+	int GetWorldToMapX(float x);
+	int GetWorldToMapY(float y);
+	int GetMapChip(int map_x, int map_y);
+
 	Box GetChipBoxCollision(float chipPosX, float chipPosY);
 	bool MapCollision();
 };

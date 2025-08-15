@@ -17,6 +17,7 @@
 #include "background.h"
 #include "camera.h"
 #include "map.h"
+#include "check_collision.h"
 
 #include "debug_text.h"
 #include "debug_ostream.h"
@@ -83,7 +84,10 @@ void Game_Update(double elapsed_time)
     Bullet_Update(elapsed_time);
     //Enemy_Update(elapsed_time);
 
-    testPlayer.Update(elapsed_time, testCam.GetViewRect());
+    testPlayer.UpdatePosition(elapsed_time, testCollision, testCam.GetViewRect());
+    testPlayer.UpdateStatus();
+    testPlayer.SetScreenPosition(testCam.GetViewRect()); // to screen space
+
     testCam.Update(testPlayer.GetWorldPosition());
 
     hitJudgementBulletVSEnemy();
@@ -107,7 +111,7 @@ void Game_Draw()
     // Map Draw
     testMapMg.Draw(testCam.GetViewRect());
     testMapFg.Draw(testCam.GetViewRect());
-    testCollision.Draw(testCam.GetViewRect());
+    //testCollision.Draw(testCam.GetViewRect());
 
     Bullet_Draw();
     testPlayer.Draw();
@@ -125,7 +129,7 @@ void hitJudgementBulletVSEnemy()
         for (int ei = 0; ei < ENEMIES_MAX; ei++)
         {
             if (!Enemy_IsEnable(ei)) continue;
-            if (Collision_OverlapCircle(
+            if (Collision_CheckCircle(
                 Bullet_GetCollision(bi),
                 Enemy_GetCollision(ei)
             ))
@@ -140,13 +144,13 @@ void hitJudgementBulletVSEnemy()
 
 void hitJudgementPlayerVSEnemy()
 {
-    if (!testPlayer.IsEnable()) return;
+    if (!testPlayer.GetIsEnable()) return;
 
     for (int ei = 0; ei < ENEMIES_MAX; ei++)
     {
         if (!Enemy_IsEnable(ei)) continue;
 
-        if (Collision_OverlapCircle(
+        if (Collision_CheckCircle(
             testPlayer.GetCircleCollision(),
             Enemy_GetCollision(ei)
         )) // ƒqƒbƒg‚³‚ê‚½‚ç
