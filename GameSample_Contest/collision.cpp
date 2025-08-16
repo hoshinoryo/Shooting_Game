@@ -21,7 +21,7 @@ static ID3D11Buffer* g_pVertexBuffer = nullptr; // 頂点バッファ
 static ID3D11Device* g_pDevice = nullptr;
 static ID3D11DeviceContext* g_pContext = nullptr;
 
-static int g_WhiteTexId = -1;
+static Texture g_WhiteTex;
 
 // 頂点構造体
 struct Vertex
@@ -65,18 +65,27 @@ void Collision_DebugInitialize(ID3D11Device* pDevice, ID3D11DeviceContext* pCont
     bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
-    g_pDevice->CreateBuffer(&bd, NULL, &g_pVertexBuffer);
+	Vertex vertices[NUM_VERTEX] = {};
+	D3D11_SUBRESOURCE_DATA initData = {};
+	initData.pSysMem = vertices;
 
-    g_WhiteTexId = Texture_Load(L"resources/white.png");
+	HRESULT hr = g_pDevice->CreateBuffer(&bd, &initData, &g_pVertexBuffer);
+	if (FAILED(hr)) {
+		g_pVertexBuffer = nullptr;
+		return;
+	}
 }
 
 void Collision_DebugFinalize()
 {
     SAFE_RELEASE(g_pVertexBuffer);
+	g_WhiteTex.Finalize();
 }
 
-void Collision_DebugDraw(const Circle& circle, const XMFLOAT4& color)
+void Collision_DebugDraw(const Texture& tex, const Circle& circle, const XMFLOAT4& color)
 {
+	g_WhiteTex.Initialize(g_pDevice, L"resources/white.png");
+
 	int NumVertex = (int)circle.radius * 2.0f * XM_PI + 1;
 
 	Shader_Begin();
@@ -94,7 +103,7 @@ void Collision_DebugDraw(const Circle& circle, const XMFLOAT4& color)
 		v[i].position.y = sinf(rad * i) * circle.radius + circle.center.y;
 		v[i].position.z = 0.0f;
 		v[i].color = color;
-		v[i].uv = XMFLOAT2{ 0.0, 0.0f }; // UV座標の仮設定（中央に固定）
+		v[i].uv = XMFLOAT2{ 0.0, 0.0f };
 	}
 
 	g_pContext->Unmap(g_pVertexBuffer, 0);
@@ -104,16 +113,17 @@ void Collision_DebugDraw(const Circle& circle, const XMFLOAT4& color)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	g_pContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
-
 	g_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-	Texture_SetTexture(g_WhiteTexId);
+	tex.SetTexture(g_pContext);
 
 	g_pContext->Draw(NumVertex, 0);
 }
 
-void Collision_DebugDraw(const Box& box, const XMFLOAT4& color)
+void Collision_DebugDraw(const Texture& tex, const Box& box, const XMFLOAT4& color)
 {
+	g_WhiteTex.Initialize(g_pDevice, L"resources/white.png");
+
 	int NumVertex = 5;
 
 	Shader_Begin();
@@ -123,7 +133,6 @@ void Collision_DebugDraw(const Box& box, const XMFLOAT4& color)
 
 	Vertex* v = (Vertex*)msr.pData;
 
-	// 頂点情報
 	v[0].position = { box.center.x - box.half_width, box.center.y - box.half_height, 0.0f };
 	v[1].position = { box.center.x + box.half_width, box.center.y - box.half_height, 0.0f };
 	v[2].position = { box.center.x + box.half_width, box.center.y + box.half_height, 0.0f };
@@ -143,10 +152,9 @@ void Collision_DebugDraw(const Box& box, const XMFLOAT4& color)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	g_pContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
-
 	g_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 
-	Texture_SetTexture(g_WhiteTexId);
+	tex.SetTexture(g_pContext);
 
 	g_pContext->Draw(NumVertex, 0);
 }

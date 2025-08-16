@@ -14,6 +14,7 @@
 #include "bullet.h"
 #include "direct3d.h"
 #include "check_collision.h"
+#include "direct3d.h"
 
 #include "debug_text.h"
 
@@ -31,7 +32,6 @@ Player::Player()
     playerVelocity = {};
     playerSize = {};
     playerFlip = false;
-    playerTexId = -1;
     playerAnimPlayId = -1;
     playerCircleCollision = { { 64.0f, 92.0f }, 20.0f };
     playerBoxCollision = { { 64.0f, 92.0f }, 24.0f, 14.0f }; // test collision box
@@ -49,11 +49,12 @@ void Player::Initialize(const XMFLOAT2& position)
     playerFlip = false;
     playerEnable = true;
 
-    playerTexId = Texture_Load(L"resources/Santa_Claus.png");
+    playerTex.Initialize(Direct3D_GetDevice(), L"resources/Santa_Claus.png");
 }
 
 void Player::Finalize()
 {
+    playerTex.Finalize();
 }
 
 void Player::UpdatePosition(double elapsed_time, Collision_Map& map, const ViewRect& viewRect)
@@ -151,7 +152,7 @@ void Player::ChangeStatus(Status newPlayerStatus)
     case stand:
         playerAnimPlayId = SpriteAnim_CreatePlayer(
             SpriteAnim_RegisterPattern(
-                playerTexId, 1, 1,
+                playerTex, 1, 1,
                 PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
                 { 256.0f, 896.0f }, true
             )
@@ -161,7 +162,7 @@ void Player::ChangeStatus(Status newPlayerStatus)
     case walkFront:
         playerAnimPlayId = SpriteAnim_CreatePlayer(
             SpriteAnim_RegisterPattern(
-                playerTexId, 6, 6,
+                playerTex, 6, 6,
                 PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
                 { 0.0f, 0.0f }, true
             )
@@ -171,7 +172,7 @@ void Player::ChangeStatus(Status newPlayerStatus)
     case walkLeft:
         playerAnimPlayId = SpriteAnim_CreatePlayer(
             SpriteAnim_RegisterPattern(
-                playerTexId, 6, 6,
+                playerTex, 6, 6,
                 PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
                 { 0.0f, 128.0f }, true
             )
@@ -181,7 +182,7 @@ void Player::ChangeStatus(Status newPlayerStatus)
     case walkBack:
         playerAnimPlayId = SpriteAnim_CreatePlayer(
             SpriteAnim_RegisterPattern(
-                playerTexId, 6, 6,
+                playerTex, 6, 6,
                 PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
                 { 0.0f, 256.0f }, true
             )
@@ -191,7 +192,7 @@ void Player::ChangeStatus(Status newPlayerStatus)
     case walkRight:
         playerAnimPlayId = SpriteAnim_CreatePlayer(
             SpriteAnim_RegisterPattern(
-                playerTexId, 6, 6,
+                playerTex, 6, 6,
                 PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
                 { 0.0f, 128.0f }, true
             )
@@ -233,7 +234,7 @@ void Player::Draw()
 #if defined(DEBUG) || defined(_DEBUG)
 
     //Collision_DebugDraw(GetCircleCollision());
-    Collision_DebugDraw(GetBoxCollision());
+    Collision_DebugDraw(playerTex, GetBoxCollision());
 
 #endif
 }

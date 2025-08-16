@@ -1,14 +1,14 @@
-/*==============================================================================
+// ==========================================================================================
+// 
+// File Name: sprite_anim.cpp
+// Date: 2025/08/17
+// Author: Gu Anyi
+// Description: Draw the sprite animation and manage animation playing data
+// 
+// ==========================================================================================
 
-   スプライトアニメーション描画 [sprite_anim.cpp]
-														 Author : Youhei Sato
-														 Date   : 2025/06/17
---------------------------------------------------------------------------------
-
-==============================================================================*/
 #include "sprite_anim.h"
 #include "sprite.h"
-#include "texture.h"
 
 #include <DirectXMath.h>
 
@@ -20,13 +20,25 @@ using namespace DirectX;
 
 struct AnimPatternData
 {
-	int m_TextureId = -1;    // テクスチャID
+	//int m_TextureId = -1;    // テクスチャID
 	int m_PatternMax = 0;    // アニメのパターン数
 	int m_HPatternMax = 0;    // アニメの横方向のパターン数
 	XMFLOAT2 m_StartPosition = { 0, 0 }; // アニメーションのスタート座標
 	XMFLOAT2 m_PatternSize = { 0.0f, 0.0f };   // 1パターンのサイズ
 	double m_seconds_per_pattern = 0.1; // 1パターンの再生時間
 	bool m_IsLooped = true;  // ループするか
+	Texture m_Texture;
+
+	void Reset()
+	{
+		m_Texture.Release();
+		m_PatternMax = 0;
+		m_HPatternMax = 0;
+		m_StartPosition = { 0, 0 };
+		m_PatternSize = { 0, 0 };
+		m_seconds_per_pattern = 0.1;
+		m_IsLooped = true;
+	}
 };
 
 struct AnimPlayData
@@ -44,22 +56,31 @@ static AnimPlayData g_AnimPlayData[ANIM_PLAY_MAX];
 
 void SpriteAnim_Initialize()
 {
-	// アニメーションパターン管理情報を初期化（全て利用していない）状況にする
-
 	for (AnimPatternData& data : g_AnimPattern)
 	{
-		data.m_TextureId = -1; // -1だったら使えない
+		data.m_PatternMax = 0;
+		data.m_HPatternMax = 0;
+		data.m_StartPosition = { 0, 0 };
+		data.m_PatternSize = { 0.0f, 0.0f };
+		data.m_seconds_per_pattern = 0.1;
+		data.m_IsLooped = true;
 	}
 
 	for (AnimPlayData& data : g_AnimPlayData)
 	{
-		data.m_PatternId = -1; // -1だったら使えない
+		data.m_PatternId = -1;
+		data.m_IsStopped = false;
+		data.m_Accumulated_time = 0.0;
 		data.m_IsStopped = false;
 	}
 }
 
 void SpriteAnim_Finalize()
 {
+	for (AnimPatternData& data : g_AnimPattern)
+	{
+		data.m_Texture.Release();
+	}
 }
 
 void SpriteAnim_Update(double elapsed_time)
@@ -98,36 +119,49 @@ void SpriteAnim_Update(double elapsed_time)
 void SpriteAnim_Draw(int playid, float dx, float dy, float dw, float dh, bool isFlipX)
 {
 	int anim_pattern_id = g_AnimPlayData[playid].m_PatternId;
-	AnimPatternData* pAnimPatternData = &g_AnimPattern[anim_pattern_id];
+	if (anim_pattern_id < 0) return;
 
-	// 同一行の画像をアニメにする、sprite.cppの関数を使う
-	Sprite_Draw(pAnimPatternData->m_TextureId,
+	AnimPatternData* pAnimPatternData = &g_AnimPattern[anim_pattern_id];
+	Texture* tex = &pAnimPatternData->m_Texture;
+
+	float px = pAnimPatternData->m_StartPosition.x +
+		pAnimPatternData->m_PatternSize.x *
+		(g_AnimPlayData[playid].m_PatternNum % pAnimPatternData->m_HPatternMax);
+	float py = pAnimPatternData->m_StartPosition.y +
+		pAnimPatternData->m_PatternSize.y *
+		(g_AnimPlayData[playid].m_PatternNum / pAnimPatternData->m_HPatternMax);
+	float pw = pAnimPatternData->m_PatternSize.x;
+	float ph = pAnimPatternData->m_PatternSize.y;
+
+	/*Sprite_Draw(pAnimPatternData->m_Texture,
 		dx, dy, dw, dh,
 		pAnimPatternData->m_StartPosition.x + pAnimPatternData->m_PatternSize.x * (g_AnimPlayData[playid].m_PatternNum % pAnimPatternData->m_HPatternMax),
 		pAnimPatternData->m_StartPosition.y + pAnimPatternData->m_PatternSize.y * (g_AnimPlayData[playid].m_PatternNum / pAnimPatternData->m_HPatternMax),
 		pAnimPatternData->m_PatternSize.x,
 		pAnimPatternData->m_PatternSize.y,
 		isFlipX
-	);
+	);*/
+
+	Sprite_Draw(*tex, dx, dy, dw, dh, (int)px, (int)py, (int)pw, (int)ph, isFlipX);
 }
 
-int SpriteAnim_RegisterPattern(int texId, int patternMax, int h_pattern_max, double seconds_per_pattern,
+int SpriteAnim_RegisterPattern(const Texture& tex, int patternMax, int h_pattern_max, double seconds_per_pattern,
 	const DirectX::XMFLOAT2& pattern_size,
 	const DirectX::XMFLOAT2& start_position, bool is_looped)
 {
-
 	for (int i = 0; i < ANIM_PATTERN_MAX; i++)
 	{
-		// 空いてる場所を探す
-		if (g_AnimPattern[i].m_TextureId >= 0) continue;
+		if (g_AnimPattern[i].m_PatternMax != 0) continue;
 
-		g_AnimPattern[i].m_TextureId = texId;
-		g_AnimPattern[i].m_PatternMax = patternMax;
-		g_AnimPattern[i].m_HPatternMax = h_pattern_max;
-		g_AnimPattern[i].m_seconds_per_pattern = seconds_per_pattern;
-		g_AnimPattern[i].m_PatternSize = pattern_size;
-		g_AnimPattern[i].m_StartPosition = start_position;
-		g_AnimPattern[i].m_IsLooped = is_looped;
+		AnimPatternData& data = g_AnimPattern[i];
+		data.Reset();
+		data.m_Texture = tex;
+		data.m_PatternMax = patternMax;
+		data.m_HPatternMax = h_pattern_max;
+		data.m_seconds_per_pattern = seconds_per_pattern;
+		data.m_PatternSize = pattern_size;
+		data.m_StartPosition = start_position;
+		data.m_IsLooped = is_looped;
 
 		return i;
 	}
@@ -144,9 +178,6 @@ int SpriteAnim_CreatePlayer(int anim_pattern_id)
 		g_AnimPlayData[i].m_PatternId = anim_pattern_id;
 		g_AnimPlayData[i].m_Accumulated_time = 0.0;
 		g_AnimPlayData[i].m_PatternNum = 0;
-
-		// アニメ再生データを再利用する場合、前回の停止状態が残っている可能性がある。
-		// 新しく再生を開始するため、明示的に再生中（false）にリセットする必要がある。
 		g_AnimPlayData[i].m_IsStopped = false;
 
 		return i;
@@ -164,3 +195,5 @@ void SpriteAnim_DestroyPlayer(int index)
 {
 	g_AnimPlayData[index].m_PatternId = -1;
 }
+
+

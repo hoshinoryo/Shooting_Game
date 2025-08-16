@@ -34,12 +34,12 @@ private:
 	DirectX::XMFLOAT2 playerVelocity;
 	DirectX::XMFLOAT2 playerSize;
 	bool playerFlip;
-	int playerTexId;
 	int playerAnimPlayId;
 	Circle playerCircleCollision;
 	Box playerBoxCollision;
 	bool playerEnable;
 	Status playerStatus;
+	Texture playerTex;
 
 public:
 

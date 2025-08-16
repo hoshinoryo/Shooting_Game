@@ -1,11 +1,11 @@
-/*==============================================================================
-
-   スプライト描画 [sprite.cpp]
-														 Author : Youhei Sato
-														 Date   : 2025/06/12
---------------------------------------------------------------------------------
-
-==============================================================================*/
+// ==========================================================================================
+// 
+// File Name: sprite.cpp
+// Date: 2025/08/17
+// Author: Gu Anyi
+// Description: Draw the sprite
+// 
+// ==========================================================================================
 #include <d3d11.h>
 #include <DirectXMath.h>
 using namespace DirectX;
@@ -15,10 +15,10 @@ using namespace DirectX;
 #include "sprite.h"
 #include "texture.h"
 
-#pragma comment(lib, "d3d11.lib") // ライブラリリンク
+#pragma comment(lib, "d3d11.lib")
 
 
-static constexpr int NUM_VERTEX = 4; // 頂点数
+static constexpr int NUM_VERTEX = 4;
 
 static ID3D11Buffer* g_pVertexBuffer = nullptr; // 頂点バッファ
 static ID3D11ShaderResourceView* g_pTexture = nullptr; // テクスチャ
@@ -75,24 +75,17 @@ void Sprite_Begin()
 	Shader_SetProjectionMatrix(XMMatrixOrthographicOffCenterLH(0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f));
 }
 
-void Sprite_Draw(int texid, float dx, float dy,
-	bool isFlipX, const XMFLOAT4& color)
+void Sprite_Draw(const Texture& tex, float dx, float dy, bool isFlipX, const XMFLOAT4& color)
 {
-	// シェーダーを描画パイプラインに設定
 	Shader_Begin();
 
-	// 頂点バッファをロックする
 	D3D11_MAPPED_SUBRESOURCE msr;
 	g_pContext->Map(g_pVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
-
-	// 頂点バッファへの仮想ポインタを取得
 	Vertex* v = (Vertex*)msr.pData;
 
-	// 頂点情報を書き込み
-	unsigned int dw = Texture_Width(texid);
-	unsigned int dh = Texture_Height(texid);
+	unsigned int dw = tex.GetWidth();
+	unsigned int dh = tex.GetHeight();
 
-	// 画面の左上から右下に向かう線分を描画する
 	v[0].position = { dx,      dy,     0.0f };
 	v[1].position = { dx + dw, dy,     0.0f };
 	v[2].position = { dx ,     dy + dh, 0.0f };
@@ -105,39 +98,29 @@ void Sprite_Draw(int texid, float dx, float dy,
 
 	Sprite_UVFlip(v, 0.0f, 1.0f, 0.0f, 1.0f, isFlipX);
 
-	// 頂点バッファのロックを解除
 	g_pContext->Unmap(g_pVertexBuffer, 0);
 
-	// ワールド変換行列を設定
 	Shader_SetWorldMatrix(XMMatrixIdentity());
 
-	// 頂点バッファを描画パイプラインに設定
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	g_pContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
-
-	// プリミティブトポロジ設定
 	g_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	// テクスチャ設定、メイン関数の中で書く必要がない
-	Texture_SetTexture(texid);
+	tex.SetTexture(g_pContext);
 
-	// ポリゴン描画命令発行
 	g_pContext->Draw(NUM_VERTEX, 0);
 
 }
 
 // UV mapping is not required
-void Sprite_Draw(int texid, float dx, float dy, float dw, float dh,
+void Sprite_Draw(const Texture& tex, float dx, float dy, float dw, float dh,
 	bool isFlipX, const XMFLOAT4& color)
 {
 	Shader_Begin();
 
-	// 頂点バッファをロックする
 	D3D11_MAPPED_SUBRESOURCE msr;
 	g_pContext->Map(g_pVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
-
-	// 頂点バッファへの仮想ポインタを取得
 	Vertex* v = (Vertex*)msr.pData;
 
 	v[0].position = { dx,      dy,     0.0f };
@@ -152,42 +135,31 @@ void Sprite_Draw(int texid, float dx, float dy, float dw, float dh,
 
 	Sprite_UVFlip(v, 0.0f, 1.0f, 0.0f, 1.0f, isFlipX);
 
-	// 頂点バッファのロックを解除
 	g_pContext->Unmap(g_pVertexBuffer, 0);
 
-	// ワールド変換行列を設定
 	Shader_SetWorldMatrix(XMMatrixIdentity());
 
-	// 頂点バッファを描画パイプラインに設定
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	g_pContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
-
-	// プリミティブトポロジ設定
 	g_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	// テクスチャ設定、メイン関数の中で書く必要がない
-	Texture_SetTexture(texid);
+	tex.SetTexture(g_pContext);
 
-	// ポリゴン描画命令発行
 	g_pContext->Draw(NUM_VERTEX, 0);
 }
 
 // UV mapping is required
-void Sprite_Draw(int texid, float dx, float dy, int px, int py, int pw, int ph,
+void Sprite_Draw(const Texture& tex, float dx, float dy, int px, int py, int pw, int ph,
 	bool isFlipX, const XMFLOAT4& color)
 {
-	// シェーダーを描画パイプラインに設定
 	Shader_Begin();
 
-	// 頂点バッファをロックする
 	D3D11_MAPPED_SUBRESOURCE msr;
 	g_pContext->Map(g_pVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
 
-	// 頂点バッファへの仮想ポインタを取得
 	Vertex* v = (Vertex*)msr.pData;
 
-	// 切り取りたい幅と高さ
 	v[0].position = { dx,      dy,      0.0f };
 	v[1].position = { dx + pw, dy,      0.0f };
 	v[2].position = { dx ,     dy + ph, 0.0f };
@@ -198,53 +170,40 @@ void Sprite_Draw(int texid, float dx, float dy, int px, int py, int pw, int ph,
 	v[2].color = color;
 	v[3].color = color;
 
-	// 頂点情報を書き込み
-	float tw = (float)Texture_Width(texid);
-	float th = (float)Texture_Height(texid);
+	float tw = (float)tex.GetWidth();
+	float th = (float)tex.GetHeight();
 
-	/* テクスチャの一部のみを表示するため、UV座標を調整する */
-	float u0 = px / tw; // uvカット
+	float u0 = px / tw;
 	float v0 = py / th;
 	float u1 = (px + pw) / tw;
 	float v1 = (py + ph) / th;
 
 	Sprite_UVFlip(v, u0, u1, v0, v1, isFlipX);
 
-	// 頂点バッファのロックを解除
 	g_pContext->Unmap(g_pVertexBuffer, 0);
 
-	// ワールド変換行列を設定
 	Shader_SetWorldMatrix(XMMatrixIdentity());
 
-	// 頂点バッファを描画パイプラインに設定
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	g_pContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
-
-	// プリミティブトポロジ設定
 	g_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	// テクスチャ設定、メイン関数の中で書く必要がない
-	Texture_SetTexture(texid);
+	tex.SetTexture(g_pContext);
 
-	// ポリゴン描画命令発行
 	g_pContext->Draw(NUM_VERTEX, 0);
 }
 
-void Sprite_Draw(int texid, float dx, float dy, float dw, float dh, int px, int py, int pw, int ph,
+void Sprite_Draw(const Texture& tex, float dx, float dy, float dw, float dh, int px, int py, int pw, int ph,
 	bool isFlipX, const XMFLOAT4& color)
 {
-	// シェーダーを描画パイプラインに設定
 	Shader_Begin();
 
-	// 頂点バッファをロックする
 	D3D11_MAPPED_SUBRESOURCE msr;
 	g_pContext->Map(g_pVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
 
-	// 頂点バッファへの仮想ポインタを取得
 	Vertex* v = (Vertex*)msr.pData;
 
-	// 切り取りたい幅と高さ
 	v[0].position = { dx,      dy,     0.0f };
 	v[1].position = { dx + dw, dy,     0.0f };
 	v[2].position = { dx ,     dy + dh, 0.0f };
@@ -255,11 +214,9 @@ void Sprite_Draw(int texid, float dx, float dy, float dw, float dh, int px, int 
 	v[2].color = color;
 	v[3].color = color;
 
-	// 頂点情報を書き込み
-	float tw = (float)Texture_Width(texid);
-	float th = (float)Texture_Height(texid);
+	float tw = (float)tex.GetWidth();
+	float th = (float)tex.GetHeight();
 
-	/* テクスチャの一部のみを表示するため、UV座標を調整する */
 	float u0 = px / tw; // uvカット
 	float v0 = py / th;
 	float u1 = (px + pw) / tw;
@@ -267,41 +224,31 @@ void Sprite_Draw(int texid, float dx, float dy, float dw, float dh, int px, int 
 
 	Sprite_UVFlip(v, u0, u1, v0, v1, isFlipX);
 
-	// 頂点バッファのロックを解除
 	g_pContext->Unmap(g_pVertexBuffer, 0);
 
-	// ワールド変換行列を設定
 	Shader_SetWorldMatrix(XMMatrixIdentity());
 
-	// 頂点バッファを描画パイプラインに設定
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	g_pContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
-
-	// プリミティブトポロジ設定
 	g_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	// テクスチャ設定、メイン関数の中で書く必要がない
-	Texture_SetTexture(texid);
+	tex.SetTexture(g_pContext);
 
-	// ポリゴン描画命令発行
 	g_pContext->Draw(NUM_VERTEX, 0);
-
 }
 
-void Sprite_Draw(int texid, float dx, float dy, float dw, float dh, int px, int py, int pw, int ph, float angle, const DirectX::XMFLOAT4& color)
+void Sprite_Draw(const Texture& tex, float dx, float dy, float dw, float dh,
+	int px, int py, int pw, int ph,
+	float angle, const DirectX::XMFLOAT4& color)
 {
-	// シェーダーを描画パイプラインに設定
 	Shader_Begin();
 
-	// 頂点バッファをロックする
 	D3D11_MAPPED_SUBRESOURCE msr;
 	g_pContext->Map(g_pVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
 
-	// 頂点バッファへの仮想ポインタを取得
 	Vertex* v = (Vertex*)msr.pData;
 
-	// 切り取りたい幅と高さ
 	v[0].position = { -0.5f, -0.5f, 0.0f };
 	v[1].position = { +0.5f, -0.5f, 0.0f };
 	v[2].position = { -0.5f, +0.5f, 0.0f };
@@ -312,47 +259,37 @@ void Sprite_Draw(int texid, float dx, float dy, float dw, float dh, int px, int 
 	v[2].color = color;
 	v[3].color = color;
 
-	// 頂点情報を書き込み
-	float tw = (float)Texture_Width(texid);
-	float th = (float)Texture_Height(texid);
+	float tw = (float)tex.GetWidth();
+	float th = (float)tex.GetHeight();
 
-	/* テクスチャの一部のみを表示するため、UV座標を調整する */
-	float u0 = px / tw; // uvカット
+	float u0 = px / tw;
 	float v0 = py / th;
 	float u1 = (px + pw) / tw;
 	float v1 = (py + ph) / th;
 
-	// 画面の左上uv値は(0, 0)、右下は(1, 1)
 	v[0].uv = { u0, v0 };
 	v[1].uv = { u1, v0 };
 	v[2].uv = { u0, v1 };
-	v[3].uv = { u1, v1 }; // 右下
+	v[3].uv = { u1, v1 };
 
-	// 頂点バッファのロックを解除
 	g_pContext->Unmap(g_pVertexBuffer, 0);
 
-	// ワールド変換行列を設定
 	Shader_SetWorldMatrix(XMMatrixIdentity());
 
-	// 変換行列をシェーダーに設定, 必ずsrtの順番に変換
+	// 変換行列をシェーダーに設定
 	XMMATRIX scale = XMMatrixScaling(dw, dh, 1.0f);           // 拡大縮小
 	XMMATRIX rotation = XMMatrixRotationZ(angle);             // 回転行列
 	XMMATRIX translation = XMMatrixTranslation(dx, dy, 0.0f); // 平行移動行列
 	// 行列の合成
 	Shader_SetWorldMatrix(scale * rotation * translation);
 
-	// 頂点バッファを描画パイプラインに設定
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	g_pContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
-
-	// プリミティブトポロジ設定
 	g_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	// テクスチャ設定、メイン関数の中で書く必要がない
-	Texture_SetTexture(texid);
+	tex.SetTexture(g_pContext);
 
-	// ポリゴン描画命令発行
 	g_pContext->Draw(NUM_VERTEX, 0);
 }
 

@@ -9,7 +9,7 @@
 
 #include "map.h"
 #include "sprite.h"
-#include "texture.h"
+#include "direct3d.h"
 
 #include <algorithm>
 #include <fstream>
@@ -22,7 +22,7 @@
 
 Map::Map()
 {
-	mapTexId = -1;
+	//mapTexId = -1;
 	std::fill(std::begin(mapArray), std::end(mapArray), -1); // default are all -1
 	mapWidth = MAPCHIP_WIDTH * MAP_H_COUNT;
 	mapHeight = MAPCHIP_HEIGHT * MAP_V_COUNT;
@@ -34,7 +34,7 @@ Map::~Map()
 
 void Map::Initialize(const std::string& filePath)
 {
-	mapTexId = Texture_Load(L"resources/Christmass_Grass.png");
+	mapTex.Initialize(Direct3D_GetDevice(), L"resources/Christmass_Grass.png");
 
 	if (!LoadMapFromCSV(filePath))
 	{
@@ -44,6 +44,7 @@ void Map::Initialize(const std::string& filePath)
 
 void Map::Finalize()
 {
+	mapTex.Finalize();
 }
 
 bool Map::LoadMapFromCSV(const std::string& filePath)
@@ -111,7 +112,7 @@ void Map::Draw(const ViewRect& viewRect)
 			int chipIndexX = chipId % 8;
 			int chipIndexY = chipId / 8;
 
-			Sprite_Draw(mapTexId, chipPosX, chipPosY, MAPCHIP_WIDTH, MAPCHIP_HEIGHT, 64 * chipIndexX, 64 * chipIndexY, 64.0f, 64.0f);
+			Sprite_Draw(mapTex, chipPosX, chipPosY, MAPCHIP_WIDTH, MAPCHIP_HEIGHT, 64 * chipIndexX, 64 * chipIndexY, 64.0f, 64.0f);
 		}
 	}
 }
@@ -121,7 +122,7 @@ void Map::Draw(const ViewRect& viewRect)
 
 Collision_Map::Collision_Map()
 {
-	mapTexId = -1;
+	//mapTexId = -1;
 	std::fill(std::begin(mapArray), std::end(mapArray), -1);
 	mapWidth = MAPCHIP_WIDTH * MAP_H_COUNT;
 	mapHeight = MAPCHIP_HEIGHT * MAP_V_COUNT;
@@ -132,7 +133,7 @@ Collision_Map::Collision_Map()
 
 void Collision_Map::Initialize(const std::string& filePath)
 {
-	mapTexId = Texture_Load(L"resources/Collision.png");
+	mapTex.Initialize(Direct3D_GetDevice(), L"resources/Collision.png");
 
 	if (!LoadMapFromCSV(filePath))
 	{
@@ -173,12 +174,12 @@ void Collision_Map::Draw(const ViewRect& viewRect)
 			int chipIndexX = chipId % 8;
 			int chipIndexY = chipId / 8;
 
-			Sprite_Draw(mapTexId, chipPosX, chipPosY, MAPCHIP_WIDTH, MAPCHIP_HEIGHT, 64 * chipIndexX, 64 * chipIndexY, 64.0f, 64.0f);
+			Sprite_Draw(mapTex, chipPosX, chipPosY, MAPCHIP_WIDTH, MAPCHIP_HEIGHT, 64 * chipIndexX, 64 * chipIndexY, 64.0f, 64.0f);
 
 #if defined(DEBUG) || defined(_DEBUG)
 			if (chipId != -1)
 			{
-				Collision_DebugDraw(GetChipBoxCollision(chipPosX, chipPosY));
+				Collision_DebugDraw(mapTex, GetChipBoxCollision(chipPosX, chipPosY));
 			}
 #endif
 		}

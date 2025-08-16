@@ -1,13 +1,15 @@
-/*==============================================================================
-
-   スプライト表示 [sprite.h]
-														 Author : Youhei Sato
-														 Date   : 2025/06/12
---------------------------------------------------------------------------------
-
-==============================================================================*/
+// ==========================================================================================
+// 
+// File Name: sprite.h
+// Date: 2025/08/17
+// Author: Gu Anyi
+// Description: Sprite header file
+// 
+// ==========================================================================================
 #ifndef SPRITE_H
 #define SPRITE_H
+
+#include "texture.h"
 
 #include <d3d11.h>
 #include <DirectXMath.h>
@@ -27,23 +29,23 @@ void Sprite_Begin();
 
 // デフォルト背景色は白（引数XMFLOAT4 color）
 // テクスチャ全表示
-void Sprite_Draw(int texid, float dx, float dy,
+void Sprite_Draw(const Texture& tex, float dx, float dy,
 	bool isFlipX = false, const DirectX::XMFLOAT4& color = {1.0f, 1.0f, 1.0f, 1.0f});
 
 // テクスチャ全表示（表示サイズ変更）
-void Sprite_Draw(int texid, float dx, float dy, float dw, float dh,
+void Sprite_Draw(const Texture& tex, float dx, float dy, float dw, float dh,
 	bool isFlipX = false, const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f });
 
 // UVカット
-void Sprite_Draw(int texid, float dx, float dy, int px, int py, int pw, int ph,
+void Sprite_Draw(const Texture& tex, float dx, float dy, int px, int py, int pw, int ph,
 	bool isFlipX = false, const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f });
 
 // UVカット（表示サイズ変更）
-void Sprite_Draw(int texid, float dx, float dy, float dw, float dh, int px, int py, int pw, int ph,
+void Sprite_Draw(const Texture& tex, float dx, float dy, float dw, float dh, int px, int py, int pw, int ph,
 	bool isFlipX = false, const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f });
 
 // 二つのバッファ、回転もできる
-void Sprite_Draw(int texid, float dx, float dy, float dw, float dh, int px, int py, int pw, int ph, float angle,
+void Sprite_Draw(const Texture& tex, float dx, float dy, float dw, float dh, int px, int py, int pw, int ph, float angle,
 	const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f });
 
 void Sprite_UVFlip(Vertex* v, float u0, float u1, float v0, float v1, bool isFlipX);

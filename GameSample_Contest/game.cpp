@@ -50,10 +50,10 @@ void Game_Initialize()
     );
 
     testPlayer.Initialize({ Direct3D_GetBackBufferWidth() * 0.5f, Direct3D_GetBackBufferHeight() * 0.5f});
-    Bullet_Initialize();
+    //Bullet_Initialize();
     //Enemy_Initialize();
     //EnemySpawner_Initialize();
-    Effect_Initialize();
+    //Effect_Initialize();
 
     // Enemyê∂ê¨äÌ
     EnemySpawner_Create({ (float)Direct3D_GetBackBufferWidth(), 200.0f }, ENEMY_TYPE_01, 4.0f, 2.0, 8);
@@ -65,10 +65,10 @@ void Game_Initialize()
 void Game_Finalize()
 {
 	BG_Finalize();
-    Effect_Finalize();
+    //Effect_Finalize();
     //EnemySpawner_Finalize();
     //Enemy_Finalize();
-    Bullet_Finalize();
+    //Bullet_Finalize();
     testPlayer.Finalize();
 
     testCam.Finalize();
@@ -81,7 +81,7 @@ void Game_Update(double elapsed_time)
 {
     BG_Update(elapsed_time);
     //EnemySpawner_Update(elapsed_time);
-    Bullet_Update(elapsed_time);
+    //Bullet_Update(elapsed_time);
     //Enemy_Update(elapsed_time);
 
     testPlayer.UpdatePosition(elapsed_time, testCollision, testCam.GetViewRect());
@@ -93,7 +93,7 @@ void Game_Update(double elapsed_time)
     hitJudgementBulletVSEnemy();
     hitJudgementPlayerVSEnemy();
 
-    Effect_Update(elapsed_time);
+    //Effect_Update(elapsed_time);
 
 //#if defined(DEBUG) || defined(_DEBUG)
 //
@@ -113,11 +113,11 @@ void Game_Draw()
     testMapFg.Draw(testCam.GetViewRect());
     //testCollision.Draw(testCam.GetViewRect());
 
-    Bullet_Draw();
+    //Bullet_Draw();
     testPlayer.Draw();
 
     //Enemy_Draw();
-    Effect_Draw();
+    //Effect_Draw();
 }
 
 void hitJudgementBulletVSEnemy()

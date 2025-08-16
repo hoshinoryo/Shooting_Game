@@ -59,8 +59,8 @@ void Enemy_Initialize()
         e.isEnable = false;
     }
 
-    g_EnemyType[0].texId = Texture_Load(L"resources/enemy_01.png");
-    g_EnemyType[1].texId = Texture_Load(L"resources/enemy_02.png");
+    //g_EnemyType[0].texId = Texture_Load(L"resources/enemy_01.png");
+    //g_EnemyType[1].texId = Texture_Load(L"resources/enemy_02.png");
 }
 
 void Enemy_Finalize()
@@ -107,8 +107,8 @@ void Enemy_Draw()
     {
         if (!e.isEnable) continue;
 
-        Sprite_Draw(g_EnemyType[e.typeId].texId, e.position.x, e.position.y, ENEMY_WIDTH, ENEMY_HEIGHT, e.isFacingLeft,
-            e.isDamaged ? XMFLOAT4{1.0f, 1.0f, 0.0f, 1.0f} : XMFLOAT4{1.0f, 1.0f, 1.0f, 1.0f});
+        //Sprite_Draw(g_EnemyType[e.typeId].texId, e.position.x, e.position.y, ENEMY_WIDTH, ENEMY_HEIGHT, e.isFacingLeft,
+        //    e.isDamaged ? XMFLOAT4{1.0f, 1.0f, 0.0f, 1.0f} : XMFLOAT4{1.0f, 1.0f, 1.0f, 1.0f});
         e.isDamaged = false;
     }
 }

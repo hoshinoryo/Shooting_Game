@@ -51,7 +51,7 @@ int APIENTRY WinMain(
 	Direct3D_Initialize(hWnd); // Direct3DÇÃèâä˙âª
 	Shader_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 	Sprite_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
-	Texture_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
+	//Texture_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 	SpriteAnim_Initialize();
 	Polygon_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 
@@ -142,7 +142,7 @@ int APIENTRY WinMain(
 
 	Polygon_Finalize();
 	SpriteAnim_Finalize();
-	Texture_Finalize();
+	//Texture_Finalize();
 	Sprite_Finalize();
 	Shader_Finalize();
 	Direct3D_Finalize();

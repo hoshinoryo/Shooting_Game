@@ -34,7 +34,7 @@ void Bullet_Initialize()
         b.isEnable = false;
     }
 
-    g_BulletTexid = Texture_Load(L"resources/present.png");
+    //g_BulletTexid = Texture_Load(L"resources/present.png");
 }
 
 void Bullet_Finalize()
@@ -77,7 +77,7 @@ void Bullet_Draw()
     {
         if (!b.isEnable) continue;
 
-        Sprite_Draw(g_BulletTexid, b.position.x, b.position.y, 42.0f, 48.0f);
+        //Sprite_Draw(g_BulletTexid, b.position.x, b.position.y, 42.0f, 48.0f);
     }
 }
 

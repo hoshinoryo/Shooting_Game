@@ -12,6 +12,7 @@
 
 #include "camera.h"
 #include "collision.h"
+#include "texture.h"
 
 #include <DirectXMath.h>
 #include <string>
@@ -30,8 +31,10 @@ protected:
 	int mapWidth;
 	int mapHeight;
 
-	int mapTexId;
+	//int mapTexId;
 	int mapArray[MAP_H_COUNT * MAP_V_COUNT];
+
+	Texture mapTex;
 
 public:
 

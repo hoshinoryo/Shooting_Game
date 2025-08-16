@@ -1,29 +1,37 @@
-/*==============================================================================
-
-   テクスチャ管理 [texture.h]
-														 Author : Youhei Sato
-														 Date   : 2025/06/13
---------------------------------------------------------------------------------
-
-==============================================================================*/
+// ==========================================================================================
+// 
+// File Name: texture.h
+// Date: 2025/08/16
+// Author: Gu Anyi
+// Description: Texture class header file
+// 
+// ==========================================================================================
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
+#include <wrl/client.h>
 #include <d3d11.h>
 
-void Texture_Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-void Texture_Finalize(void);
+class Texture
+{
+private:
 
-// テクスチャ画像の読み込み
-//
-// 戻り値：管理番号。読み込めなかった場合 -1
-//
-int Texture_Load(const wchar_t* pFilename);
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTexture;
+	unsigned int width;
+	unsigned int height;
 
-void Texture_AllRelease();
+public:
 
-void Texture_SetTexture(int texid);
-unsigned int Texture_Width(int texid); // テクスチャの幅
-unsigned int Texture_Height(int texid); // テクスチャの高さ
+	Texture() : pTexture(nullptr), width(0), height(0) {}
+
+	bool Initialize(ID3D11Device* device, const wchar_t *pFilename);
+	void Finalize();
+
+	void Release();
+	void SetTexture(ID3D11DeviceContext* context) const;
+
+	unsigned int GetWidth() const;
+	unsigned int GetHeight() const;
+};
 
 #endif //TEXTURE_H

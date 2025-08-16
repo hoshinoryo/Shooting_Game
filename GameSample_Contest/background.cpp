@@ -12,13 +12,14 @@
 #include "sprite.h"
 #include "direct3d.h"
 
-static int g_TestBgTexId = -1;
+//static int g_TestBgTexId = -1;
 static constexpr float SCROLL_SPEED_01 = 200.0f;
 static float g_Offset01X = 0.0f;
+static Texture g_TestBgTex;
 
 void BG_Initialize()
 {
-    g_TestBgTexId = Texture_Load(L"resources/test_background.png");
+    g_TestBgTex.Initialize(Direct3D_GetDevice(), L"resources/test_background.png");
 }
 
 void BG_Finalize()
@@ -36,5 +37,5 @@ void BG_Draw()
 {
     // debug mode: test background
 	// screen size: 1600x900
-    Sprite_Draw(g_TestBgTexId, 0.0f, 0.0f, 1280.0f, 720.0f);
+    Sprite_Draw(g_TestBgTex, 0.0f, 0.0f, 1280.0f, 720.0f);
 }
