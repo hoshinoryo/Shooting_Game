@@ -127,7 +127,7 @@ Collision_Map::Collision_Map()
 	mapWidth = MAPCHIP_WIDTH * MAP_H_COUNT;
 	mapHeight = MAPCHIP_HEIGHT * MAP_V_COUNT;
 
-	chipBoxCollision = { {32.0f, 32.0f}, 32.0f, 32.0f };
+	chipBoxCollision.resize(MAP_H_COUNT * MAP_V_COUNT);
 }
 
 
@@ -139,6 +139,21 @@ void Collision_Map::Initialize(const std::string& filePath)
 	{
 		MessageBox(nullptr, "マップファイルの読み込みに失敗しました", "Error", MB_OK);
 	}
+
+	for (int y = 0; y < MAP_V_COUNT; y++)
+	{
+		for (int x = 0; x < MAP_H_COUNT; x++)
+		{
+			int chipId = mapArray[y * MAP_H_COUNT + x];
+			if (chipId == -1) continue;
+
+			float chipPosX = (float)(x * MAPCHIP_WIDTH);
+			float chipPosY = (float)(y * MAPCHIP_HEIGHT);
+
+			chipBoxCollision[y * MAP_H_COUNT + x] = GenerateChipBox(chipPosX, chipPosY, chipId);
+		}
+	}
+
 }
 
 void Collision_Map::Draw(const ViewRect& viewRect)
@@ -177,9 +192,13 @@ void Collision_Map::Draw(const ViewRect& viewRect)
 			Sprite_Draw(mapTex, chipPosX, chipPosY, MAPCHIP_WIDTH, MAPCHIP_HEIGHT, 64 * chipIndexX, 64 * chipIndexY, 64.0f, 64.0f);
 
 #if defined(DEBUG) || defined(_DEBUG)
-			if (chipId != -1)
+			for (auto& localBox : chipBoxCollision[mapY * MAP_H_COUNT + mapX])
 			{
-				Collision_DebugDraw(GetChipBoxCollision(chipPosX, chipPosY));
+				Box worldBox = {
+					{ localBox.center.x + chipPosX, localBox.center.y + chipPosY },
+					localBox.half_width, localBox.half_height
+				};
+				Collision_DebugDraw(worldBox);
 			}
 #endif
 		}
@@ -206,16 +225,68 @@ int Collision_Map::GetMapChip(int map_x, int map_y)
 	return mapArray[map_x + map_y * MAP_H_COUNT];
 }
 
-Box Collision_Map::GetChipBoxCollision(float chipPosX, float chipPosY)
+std::vector<Box> Collision_Map::GetChipBoxCollision(float chipPosX, float chipPosY, float mapX, float mapY)
 {
-	Box chipCollision = {
-		{chipBoxCollision.center.x + chipPosX, chipBoxCollision.center.y + chipPosY},
-		chipBoxCollision.half_width, chipBoxCollision.half_height
-	};
-	return chipCollision;
+	std::vector<Box> worldBoxes;
+	const std::vector<Box>& localBoxes = chipBoxCollision[mapY * MAP_H_COUNT + mapX];
+
+	for (const auto& box : localBoxes)
+	{
+		Box worldBox = box;
+		worldBox.center.x += chipPosX;
+		worldBox.center.y += chipPosY;
+		worldBoxes.push_back(worldBox);
+	}
+
+	return worldBoxes;
 }
 
-bool Collision_Map::MapCollision()
+std::vector<Box> Collision_Map::GenerateChipBox(float chipPosX, float chipPosY, int chipId)
 {
-	return false;
+	std::vector<Box> boxes;
+
+	switch (chipId)
+	{
+	case 0:
+		boxes.push_back({ { 16.0f, 32.0f }, 16.0f, 32.0f });
+		break;
+	case 1:
+		boxes.push_back({ { 48.0f, 32.0f }, 16.0f, 32.0f });
+		break;
+	case 2:
+		boxes.push_back({ { 32.0f, 16.0f }, 32.0f, 16.0f });
+		break;
+	case 3:
+		boxes.push_back({ { 32.0f, 48.0f }, 32.0f, 16.0f });
+		break;
+	case 4:
+		boxes.push_back({ { 16.0f, 16.0f }, 16.0f, 16.0f });
+		break;
+	case 5:
+		boxes.push_back({ { 48.0f, 16.0f }, 16.0f, 16.0f });
+		break;
+	case 6:
+		boxes.push_back({ { 16.0f, 48.0f }, 16.0f, 16.0f });
+		break;
+	case 7:
+		boxes.push_back({ { 48.0f, 48.0f }, 16.0f, 16.0f });
+		break;
+	case 8:
+		boxes.push_back({ { 16.0f, 32.0f }, 16.0f, 32.0f });
+		boxes.push_back({ { 48.0f, 48.0f }, 16.0f, 16.0f });
+		break;
+	case 9:
+		boxes.push_back({ { 16.0f, 48.0f }, 16.0f, 16.0f });
+		boxes.push_back({ { 48.0f, 32.0f }, 16.0f, 32.0f });
+		break;
+	case 10:
+		boxes.push_back({ { 16.0f, 32.0f }, 16.0f, 32.0f });
+		boxes.push_back({ { 48.0f, 16.0f }, 16.0f, 16.0f });
+		break;
+	case 11:
+		boxes.push_back({ { 16.0f, 16.0f }, 16.0f, 16.0f });
+		boxes.push_back({ { 48.0f, 32.0f }, 16.0f, 32.0f });
+		break;
+	}
+	return boxes;
 }

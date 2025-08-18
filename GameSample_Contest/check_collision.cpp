@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 /*
 void CheckCollision_BulletVSEnemy()
@@ -59,36 +60,36 @@ void CheckCollision_PlayerVSEnemy(Player& player)
 }
 */
 
-bool CheckCollision_PlayerBoxVSMap(Box& playerBox, Collision_Map& map, const ViewRect& viewRect)
+bool CheckCollision_PlayerBoxVSMap(const Box& playerBox, Collision_Map& map, const ViewRect& viewRect)
 {
-    float playerBoxWorldX = playerBox.center.x + viewRect.rectPosition.x;
-    float playerBoxWorldY = playerBox.center.y + viewRect.rectPosition.y;
-
-    playerBox.center.x = playerBoxWorldX;
-    playerBox.center.y = playerBoxWorldY;
+    Box worldPlayerBox = playerBox;
+    worldPlayerBox.center.x += viewRect.rectPosition.x;
+    worldPlayerBox.center.y += viewRect.rectPosition.y;
 
     // Map chip around the player
-    int leftTile   = map.GetWorldToMapX(playerBoxWorldX - playerBox.half_width);
-    int rightTile  = map.GetWorldToMapX(playerBoxWorldX + playerBox.half_width);
-    int topTile    = map.GetWorldToMapY(playerBoxWorldY - playerBox.half_height);
-    int bottomTile = map.GetWorldToMapY(playerBoxWorldY + playerBox.half_height);
+    int leftTile   = map.GetWorldToMapX(worldPlayerBox.center.x - worldPlayerBox.half_width);
+    int rightTile  = map.GetWorldToMapX(worldPlayerBox.center.x + worldPlayerBox.half_width);
+    int topTile    = map.GetWorldToMapY(worldPlayerBox.center.y - worldPlayerBox.half_height);
+    int bottomTile = map.GetWorldToMapY(worldPlayerBox.center.y + worldPlayerBox.half_height);
 
     for (int ty = topTile; ty <= bottomTile; ty++)
     {
         for (int tx = leftTile; tx <= rightTile; tx++)
         {
             int chipId = map.GetMapChip(tx, ty);
-
             if (chipId == -1) continue;
 
             float chipPosX = tx * 64.0f;
             float chipPosY = ty * 64.0f;
 
-            Box chipBox = map.GetChipBoxCollision(chipPosX, chipPosY);
+            const std::vector<Box>& chipBoxes = map.GetChipBoxCollision(chipPosX, chipPosY, tx, ty);
 
-            if (Collision_CheckBox(playerBox, chipBox))
+            for (const auto& box : chipBoxes)
             {
-                return true;
+                if (Collision_CheckBox(worldPlayerBox, box))
+                {
+                    return true;
+                }
             }
         }
     }

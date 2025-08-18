@@ -1,11 +1,11 @@
-/*==============================================================================
-
-Å@ ÉQÅ[ÉÄñ{ëÃ[game.cpp]
-                                                         Author : Youhei Sato
-                                                         Date   : 2025/06/27
---------------------------------------------------------------------------------
-
-==============================================================================*/
+// ==========================================================================================
+// 
+// File Name: game.cpp
+// Date: 2025/08/19
+// Author: Gu Anyi
+// Description: Manage the game loop
+// 
+// ==========================================================================================
 #include "game.h"
 #include "player.h"
 #include "bullet.h"
@@ -19,6 +19,7 @@
 #include "map.h"
 #include "check_collision.h"
 
+// Debug output
 #include "debug_text.h"
 #include "debug_ostream.h"
 
@@ -111,7 +112,7 @@ void Game_Draw()
     // Map Draw
     testMapMg.Draw(testCam.GetViewRect());
     testMapFg.Draw(testCam.GetViewRect());
-    testCollision.Draw(testCam.GetViewRect());
+    //testCollision.Draw(testCam.GetViewRect());
 
     //Bullet_Draw();
     testPlayer.Draw();

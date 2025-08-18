@@ -16,6 +16,6 @@
 //void CheckCollision_BulletVSEnemy();
 //void CheckCollision_PlayerVSEnemy(Player& player);
 
-bool CheckCollision_PlayerBoxVSMap(Box& playerBox, Collision_Map& map, const ViewRect& viewRect);
+bool CheckCollision_PlayerBoxVSMap(const Box& playerBox, Collision_Map& map, const ViewRect& viewRect);
 
 #endif // CHECK_COLLISION_H

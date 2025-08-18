@@ -16,6 +16,7 @@
 
 #include <DirectXMath.h>
 #include <string>
+#include <vector>
 
 using namespace DirectX;
 
@@ -31,7 +32,6 @@ protected:
 	int mapWidth;
 	int mapHeight;
 
-	//int mapTexId;
 	int mapArray[MAP_H_COUNT * MAP_V_COUNT];
 
 	Texture mapTex;
@@ -53,11 +53,32 @@ public:
 };
 
 
+/*
+enum ChipColType {
+	left,
+	right,
+	top,
+	buttom,
+	left_top,
+	right_top,
+	left_buttom,
+	right_buttom,
+	without_right_top,
+	without_left_top,
+	without_right_buttom,
+	without_left_buttom,
+	ChipColTypeCount
+};
+*/
+
+
 class Collision_Map : public Map
 {
 private:
 
-	Box chipBoxCollision;
+	std::vector<std::vector<Box>> chipBoxCollision;
+
+	std::vector<Box> GenerateChipBox(float chipPosX, float chipPosY, int chipId);
 
 public:
 
@@ -70,8 +91,7 @@ public:
 	int GetWorldToMapY(float y);
 	int GetMapChip(int map_x, int map_y);
 
-	Box GetChipBoxCollision(float chipPosX, float chipPosY);
-	bool MapCollision();
+	std::vector<Box> GetChipBoxCollision(float chipPosX, float chipPosY, float mapX, float mapY);
 };
 
 #endif // MAP_H
