@@ -23,6 +23,7 @@
 using namespace DirectX;
 
 static constexpr float PLAYER_ANIM_PLAY_RATE = 0.08f;
+static constexpr float PLAYER_SPEED = 7.0f;
 
 
 Player::Player()
@@ -89,8 +90,7 @@ void Player::UpdatePosition(double elapsed_time, Collision_Map& map, const ViewR
 
     direction = XMVector2Normalize(direction);
 
-    float speed = 5.0f;
-    XMVECTOR moveVec = XMVectorScale(direction, speed);
+    XMVECTOR moveVec = XMVectorScale(direction, PLAYER_SPEED);
     XMFLOAT2 move;
     XMStoreFloat2(&move, moveVec);
 
@@ -233,8 +233,8 @@ void Player::Draw()
 
 #if defined(DEBUG) || defined(_DEBUG)
 
-    //Collision_DebugDraw(GetCircleCollision());
-    Collision_DebugDraw(playerTex, GetBoxCollision());
+    //Collision_DebugDraw(playerTex, GetCircleCollision());
+    Collision_DebugDraw(GetBoxCollision());
 
 #endif
 }

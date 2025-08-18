@@ -111,7 +111,7 @@ void Game_Draw()
     // Map Draw
     testMapMg.Draw(testCam.GetViewRect());
     testMapFg.Draw(testCam.GetViewRect());
-    //testCollision.Draw(testCam.GetViewRect());
+    testCollision.Draw(testCam.GetViewRect());
 
     //Bullet_Draw();
     testPlayer.Draw();

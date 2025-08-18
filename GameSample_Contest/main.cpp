@@ -51,7 +51,6 @@ int APIENTRY WinMain(
 	Direct3D_Initialize(hWnd); // Direct3Dの初期化
 	Shader_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 	Sprite_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
-	//Texture_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 	SpriteAnim_Initialize();
 	Polygon_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 
@@ -68,8 +67,8 @@ int APIENTRY WinMain(
 	Mouse_SetVisible(true);
 	Collision_DebugInitialize(Direct3D_GetDevice(), Direct3D_GetContext());
 
-	ShowWindow(hWnd, nCmdShow); // ウィンドウ表示
-	UpdateWindow(hWnd); // ウィンドウの中を更新する
+	ShowWindow(hWnd, nCmdShow);
+	UpdateWindow(hWnd);
 
 	// fps・実行フレーム速度計測用
 	double exec_last_time = SystemTimer_GetTime(); // 前回処理した時間を記録
@@ -84,11 +83,10 @@ int APIENTRY WinMain(
 	{
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
-			// ウィンドウメッセージが来ていたら
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		else // ゲーム処理
+		else
 		{
 			// fps計測処理
 
@@ -108,7 +106,7 @@ int APIENTRY WinMain(
 				exec_last_time = current_time;
 
 				// ゲームの更新
-				KeyLogger_Update(); // キーの状態を更新
+				KeyLogger_Update();
 				Game_Update(elapsed_time);
 				SpriteAnim_Update(elapsed_time);
 				
@@ -142,7 +140,6 @@ int APIENTRY WinMain(
 
 	Polygon_Finalize();
 	SpriteAnim_Finalize();
-	//Texture_Finalize();
 	Sprite_Finalize();
 	Shader_Finalize();
 	Direct3D_Finalize();

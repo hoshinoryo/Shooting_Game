@@ -133,7 +133,7 @@ Collision_Map::Collision_Map()
 
 void Collision_Map::Initialize(const std::string& filePath)
 {
-	mapTex.Initialize(Direct3D_GetDevice(), L"resources/Collision.png");
+	mapTex.Initialize(Direct3D_GetDevice(), L"resources/Collision_full.png");
 
 	if (!LoadMapFromCSV(filePath))
 	{
@@ -171,15 +171,15 @@ void Collision_Map::Draw(const ViewRect& viewRect)
 			float chipPosX = (float)(x * MAPCHIP_WIDTH) + localOffsetX;
 			float chipPosY = (float)(y * MAPCHIP_HEIGHT) + localOffsetY;
 
-			int chipIndexX = chipId % 8;
-			int chipIndexY = chipId / 8;
+			int chipIndexX = chipId % 4;
+			int chipIndexY = chipId / 4;
 
 			Sprite_Draw(mapTex, chipPosX, chipPosY, MAPCHIP_WIDTH, MAPCHIP_HEIGHT, 64 * chipIndexX, 64 * chipIndexY, 64.0f, 64.0f);
 
 #if defined(DEBUG) || defined(_DEBUG)
 			if (chipId != -1)
 			{
-				Collision_DebugDraw(mapTex, GetChipBoxCollision(chipPosX, chipPosY));
+				Collision_DebugDraw(GetChipBoxCollision(chipPosX, chipPosY));
 			}
 #endif
 		}

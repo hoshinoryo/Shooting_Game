@@ -58,6 +58,8 @@ void Collision_DebugInitialize(ID3D11Device* pDevice, ID3D11DeviceContext* pCont
     g_pDevice = pDevice;
     g_pContext = pContext;
 
+	g_WhiteTex.Initialize(g_pDevice, L"resources/white.png");
+
     // 頂点バッファ
     D3D11_BUFFER_DESC bd = {};
     bd.Usage = D3D11_USAGE_DYNAMIC;
@@ -82,9 +84,9 @@ void Collision_DebugFinalize()
 	g_WhiteTex.Finalize();
 }
 
-void Collision_DebugDraw(const Texture& tex, const Circle& circle, const XMFLOAT4& color)
+void Collision_DebugDraw(const Circle& circle, const XMFLOAT4& color)
 {
-	g_WhiteTex.Initialize(g_pDevice, L"resources/white.png");
+	//g_WhiteTex.Initialize(g_pDevice, L"resources/white.png");
 
 	int NumVertex = (int)circle.radius * 2.0f * XM_PI + 1;
 
@@ -115,14 +117,14 @@ void Collision_DebugDraw(const Texture& tex, const Circle& circle, const XMFLOAT
 	g_pContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
 	g_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-	tex.SetTexture(g_pContext);
+	g_WhiteTex.SetTexture(g_pContext);
 
 	g_pContext->Draw(NumVertex, 0);
 }
 
-void Collision_DebugDraw(const Texture& tex, const Box& box, const XMFLOAT4& color)
+void Collision_DebugDraw(const Box& box, const XMFLOAT4& color)
 {
-	g_WhiteTex.Initialize(g_pDevice, L"resources/white.png");
+	//g_WhiteTex.Initialize(g_pDevice, L"resources/white.png");
 
 	int NumVertex = 5;
 
@@ -154,7 +156,7 @@ void Collision_DebugDraw(const Texture& tex, const Box& box, const XMFLOAT4& col
 	g_pContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
 	g_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 
-	tex.SetTexture(g_pContext);
+	g_WhiteTex.SetTexture(g_pContext);
 
 	g_pContext->Draw(NumVertex, 0);
 }
