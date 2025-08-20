@@ -3,7 +3,7 @@
 // File Name: game.cpp
 // Date: 2025/08/19
 // Author: Gu Anyi
-// Description: Manage the game loop
+// Description: Manage the main game loop
 // 
 // ==========================================================================================
 #include "game.h"
@@ -51,14 +51,14 @@ void Game_Initialize()
     );
 
     testPlayer.Initialize({ Direct3D_GetBackBufferWidth() * 0.5f, Direct3D_GetBackBufferHeight() * 0.5f});
-    //Bullet_Initialize();
+    Bullet_Initialize();
     //Enemy_Initialize();
     //EnemySpawner_Initialize();
     //Effect_Initialize();
 
     // Enemyê∂ê¨äÌ
-    EnemySpawner_Create({ (float)Direct3D_GetBackBufferWidth(), 200.0f }, ENEMY_TYPE_01, 4.0f, 2.0, 8);
-    EnemySpawner_Create({                                 0.0f, 400.0f }, ENEMY_TYPE_02, 3.0f, 1.0, 4);
+    //EnemySpawner_Create({ (float)Direct3D_GetBackBufferWidth(), 200.0f }, ENEMY_TYPE_01, 4.0f, 2.0, 8);
+    //EnemySpawner_Create({                                 0.0f, 400.0f }, ENEMY_TYPE_02, 3.0f, 1.0, 4);
 
 	BG_Initialize();
 }
@@ -69,7 +69,7 @@ void Game_Finalize()
     //Effect_Finalize();
     //EnemySpawner_Finalize();
     //Enemy_Finalize();
-    //Bullet_Finalize();
+    Bullet_Finalize();
     testPlayer.Finalize();
 
     testCam.Finalize();
@@ -82,17 +82,15 @@ void Game_Update(double elapsed_time)
 {
     BG_Update(elapsed_time);
     //EnemySpawner_Update(elapsed_time);
-    //Bullet_Update(elapsed_time);
     //Enemy_Update(elapsed_time);
 
-    testPlayer.UpdatePosition(elapsed_time, testCollision, testCam.GetViewRect());
-    testPlayer.UpdateStatus();
-    testPlayer.SetScreenPosition(testCam.GetViewRect()); // to screen space
+    testPlayer.Update(elapsed_time, testCollision, testCam.GetViewRect());
+    Bullet_Update(elapsed_time);
 
     testCam.Update(testPlayer.GetWorldPosition());
 
-    hitJudgementBulletVSEnemy();
-    hitJudgementPlayerVSEnemy();
+    CheckCollision_BulletVSEnemy();
+    CheckCollision_PlayerVSEnemy(testPlayer);
 
     //Effect_Update(elapsed_time);
 
@@ -114,52 +112,10 @@ void Game_Draw()
     testMapFg.Draw(testCam.GetViewRect());
     //testCollision.Draw(testCam.GetViewRect());
 
-    //Bullet_Draw();
+    Bullet_Draw();
     testPlayer.Draw();
 
     //Enemy_Draw();
     //Effect_Draw();
 }
-
-void hitJudgementBulletVSEnemy()
-{
-    for (int bi = 0; bi < BULLETS_MAX; bi++)
-    {
-        if (!Bullet_IsEnable(bi)) continue;
-        
-        for (int ei = 0; ei < ENEMIES_MAX; ei++)
-        {
-            if (!Enemy_IsEnable(ei)) continue;
-            if (Collision_CheckCircle(
-                Bullet_GetCollision(bi),
-                Enemy_GetCollision(ei)
-            ))
-            {
-                // ÉqÉbÉgÇ≥ÇÍÇΩÇÁ
-                Bullet_Destroy(bi);
-                Enemy_Damage(ei);
-            } 
-        }
-    }
-}
-
-void hitJudgementPlayerVSEnemy()
-{
-    if (!testPlayer.GetIsEnable()) return;
-
-    for (int ei = 0; ei < ENEMIES_MAX; ei++)
-    {
-        if (!Enemy_IsEnable(ei)) continue;
-
-        if (Collision_CheckCircle(
-            testPlayer.GetCircleCollision(),
-            Enemy_GetCollision(ei)
-        )) // ÉqÉbÉgÇ≥ÇÍÇΩÇÁ
-        {
-            testPlayer.Destroy();
-            Enemy_Destroy(ei);
-        }
-    }
-}
-
 

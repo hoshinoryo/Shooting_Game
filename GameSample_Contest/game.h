@@ -16,8 +16,5 @@ void Game_Finalize();
 void Game_Update(double elapsed_time);
 void Game_Draw();
 
-void hitJudgementBulletVSEnemy();
-void hitJudgementPlayerVSEnemy();
-
 
 #endif // GAME_H

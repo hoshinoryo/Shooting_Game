@@ -11,6 +11,7 @@
 #include "texture.h"
 #include "shader.h"
 
+#include <vector>
 #include <DirectXMath.h>
 
 using namespace DirectX;
@@ -67,9 +68,9 @@ void Collision_DebugInitialize(ID3D11Device* pDevice, ID3D11DeviceContext* pCont
     bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
-	Vertex vertices[NUM_VERTEX] = {};
+	std::vector<Vertex> vertices(NUM_VERTEX);
 	D3D11_SUBRESOURCE_DATA initData = {};
-	initData.pSysMem = vertices;
+	initData.pSysMem = vertices.data();
 
 	HRESULT hr = g_pDevice->CreateBuffer(&bd, &initData, &g_pVertexBuffer);
 	if (FAILED(hr)) {
@@ -86,8 +87,6 @@ void Collision_DebugFinalize()
 
 void Collision_DebugDraw(const Circle& circle, const XMFLOAT4& color)
 {
-	//g_WhiteTex.Initialize(g_pDevice, L"resources/white.png");
-
 	int NumVertex = (int)circle.radius * 2.0f * XM_PI + 1;
 
 	Shader_Begin();
@@ -124,8 +123,6 @@ void Collision_DebugDraw(const Circle& circle, const XMFLOAT4& color)
 
 void Collision_DebugDraw(const Box& box, const XMFLOAT4& color)
 {
-	//g_WhiteTex.Initialize(g_pDevice, L"resources/white.png");
-
 	int NumVertex = 5;
 
 	Shader_Begin();

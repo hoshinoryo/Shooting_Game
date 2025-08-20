@@ -53,25 +53,6 @@ public:
 };
 
 
-/*
-enum ChipColType {
-	left,
-	right,
-	top,
-	buttom,
-	left_top,
-	right_top,
-	left_buttom,
-	right_buttom,
-	without_right_top,
-	without_left_top,
-	without_right_buttom,
-	without_left_buttom,
-	ChipColTypeCount
-};
-*/
-
-
 class Collision_Map : public Map
 {
 private:

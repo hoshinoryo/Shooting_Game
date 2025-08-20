@@ -9,6 +9,8 @@
 
 #include "check_collision.h"
 #include "collision.h"
+#include "enemy.h"
+#include "bullet.h"
 
 #include "debug_text.h"
 #include "debug_ostream.h"
@@ -17,7 +19,7 @@
 #include <string>
 #include <vector>
 
-/*
+
 void CheckCollision_BulletVSEnemy()
 {
     for (int bi = 0; bi < BULLETS_MAX; bi++)
@@ -42,7 +44,7 @@ void CheckCollision_BulletVSEnemy()
 
 void CheckCollision_PlayerVSEnemy(Player& player)
 {
-    if (!player.IsEnable()) return;
+    if (!player.GetIsEnable()) return;
 
     for (int ei = 0; ei < ENEMIES_MAX; ei++)
     {
@@ -58,7 +60,7 @@ void CheckCollision_PlayerVSEnemy(Player& player)
         }
     }
 }
-*/
+
 
 bool CheckCollision_PlayerBoxVSMap(const Box& playerBox, Collision_Map& map, const ViewRect& viewRect)
 {

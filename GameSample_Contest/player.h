@@ -17,11 +17,14 @@
 
 enum Status {
 	none, // for initialization
-	stand,
 	walkFront,
+	stopFront,
 	walkLeft,
+	stopLeft,
 	walkBack,
+	stopBack,
 	walkRight,
+	stopRight,
 	STATUS_MAX
 };
 
@@ -39,6 +42,7 @@ private:
 	Box playerBoxCollision;
 	bool playerEnable;
 	Status playerStatus;
+	Status lastMoveStatus;
 	Texture playerTex;
 
 public:
@@ -51,8 +55,10 @@ public:
 	void UpdatePosition(double elapsed_time, Collision_Map& map, const ViewRect& viewRect);
 	void UpdateStatus();
 	void ChangeStatus(Status newPlayerStatus);
+	void Update(double elapsed_time, Collision_Map& map, const ViewRect& viewRect);
 	
-	//void Update(double elapsed_time, const ViewRect& viewRect);
+	DirectX::XMFLOAT2 GetShootDirection();
+	void Shoot(double elapsed_time);
 	void Draw();
 
 	bool GetIsEnable();

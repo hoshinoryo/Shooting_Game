@@ -1,44 +1,49 @@
-/*==============================================================================
-
-　 弾の制御 [bullet.cpp]
-                                                         Author : Youhei Sato
-                                                         Date   : 2025/07/01
---------------------------------------------------------------------------------
-
-==============================================================================*/
+// ==========================================================================================
+// 
+// File Name: bullet.cpp
+// Date: 2025/08/19
+// Author: Gu Anyi
+// Description: Manage the bullet generation and control
+// 
+// ==========================================================================================
 #include "bullet.h"
 #include "player.h"
 #include "direct3d.h"
 #include "sprite.h"
 #include "texture.h"
+#include "key_logger.h"
 #include <DirectXMath.h>
 
 using namespace DirectX;
+
+static constexpr float BULLET_SPEED = 500.0f;
 
 struct Bullet
 {
     XMFLOAT2 position;
     XMFLOAT2 velocity;
+    XMFLOAT2 size;
     double life_time;
     bool isEnable;
-    Circle collision; // collider
+    Circle collision;
 };
-static Bullet g_Bullets[BULLETS_MAX] = {};
-static int g_BulletTexid = -1;
 
+static Bullet g_Bullets[BULLETS_MAX] = {};
+static Texture bulletTex;
 
 void Bullet_Initialize()
 {
+    bulletTex.Initialize(Direct3D_GetDevice(), L"resources/present.png");
+
     for (Bullet& b : g_Bullets)
     {
         b.isEnable = false;
     }
-
-    //g_BulletTexid = Texture_Load(L"resources/present.png");
 }
 
 void Bullet_Finalize()
 {
+    bulletTex.Finalize();
 }
 
 void Bullet_Update(double elapsed_time)
@@ -56,6 +61,8 @@ void Bullet_Update(double elapsed_time)
         XMStoreFloat2(&b.velocity, velocity);
 
         b.life_time += elapsed_time;
+        b.collision.center.x = b.position.x + b.size.x * 0.5f;
+        b.collision.center.y = b.position.y + b.size.y * 0.5f;
 
         // 寿命が超えたら消える
         if (b.life_time > 5.0f)
@@ -64,7 +71,7 @@ void Bullet_Update(double elapsed_time)
         }
 
         // 画面の外出るのも消える
-        if (b.position.x > Direct3D_GetBackBufferWidth()) // 弾の中心座標はどこかが注意
+        if (b.position.x > Direct3D_GetBackBufferWidth())
         {
             b.isEnable = false;
         }
@@ -77,24 +84,32 @@ void Bullet_Draw()
     {
         if (!b.isEnable) continue;
 
-        //Sprite_Draw(g_BulletTexid, b.position.x, b.position.y, 42.0f, 48.0f);
+        Sprite_Draw(bulletTex, b.position.x, b.position.y, b.size.x, b.size.y);
+
+#if defined(DEBUG) || defined(_DEBUG)
+
+        Collision_DebugDraw(b.collision, {1.0f, 0.0f, 0.0f, 1.0f});
+
+#endif
     }
 }
 
-void Bullet_Create(const XMFLOAT2& position, bool isFlipX)
+void Bullet_Create(const XMFLOAT2& position, const XMFLOAT2 dir, bool isFlipX)
 {
     for (Bullet& b : g_Bullets)
     {
-        if (b.isEnable) continue; // 使用中の弾はスキップ
+        if (b.isEnable) continue;
 
-        // 空き領域発見
         b.isEnable  = true;
         b.life_time = 0.0;
-        b.position  = position;
-        b.velocity  = { (isFlipX ? 500.0f : -500.0f), 0.0f}; // 斜めにしてほしいなら、y方向を引数を用意してそこからもらう、改造ポイント
-        b.collision = { { 21.0f, 24.0f }, 20.0f }; // 弾のcollider
+        b.size.x = bulletTex.GetWidth();
+        b.size.y = bulletTex.GetHeight();
+        b.position.x = position.x - b.size.x * 0.5f;
+        b.position.y = position.y - b.size.y * 0.5f;
+        b.velocity  = { BULLET_SPEED * dir.x , BULLET_SPEED * dir.y};
+        b.collision = { { b.position.x + b.size.x * 0.5f, b.position.y + b.size.y * 0.5f }, 14.0f };
 
-        break; // 入れないと弾は消えない
+        break;
     }
 }
 
@@ -107,7 +122,7 @@ Circle Bullet_GetCollision(int index)
 {
     float cx = g_Bullets[index].collision.center.x + g_Bullets[index].position.x;
     float cy = g_Bullets[index].collision.center.y + g_Bullets[index].position.y;
-    return { {cx, cy}, g_Bullets[index].collision.radius }; // 弾のコリジョンセンター
+    return { {cx, cy}, g_Bullets[index].collision.radius };
 }
 
 void Bullet_Destroy(int index)

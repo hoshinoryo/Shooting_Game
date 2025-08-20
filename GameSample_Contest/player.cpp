@@ -14,7 +14,6 @@
 #include "bullet.h"
 #include "direct3d.h"
 #include "check_collision.h"
-#include "direct3d.h"
 
 #include "debug_text.h"
 
@@ -23,7 +22,7 @@
 using namespace DirectX;
 
 static constexpr float PLAYER_ANIM_PLAY_RATE = 0.08f;
-static constexpr float PLAYER_SPEED = 7.0f;
+static constexpr float PLAYER_SPEED = 6.0f;
 
 
 Player::Player()
@@ -35,9 +34,10 @@ Player::Player()
     playerFlip = false;
     playerAnimPlayId = -1;
     playerCircleCollision = { { 64.0f, 92.0f }, 20.0f };
-    playerBoxCollision = { { 64.0f, 92.0f }, 24.0f, 14.0f }; // test collision box
+    playerBoxCollision = { { 64.0f, 92.0f }, 24.0f, 10.0f }; // test collision box
     playerEnable = true;
     playerStatus = none;
+    lastMoveStatus = none;
 }
 
 void Player::Initialize(const XMFLOAT2& position)
@@ -51,6 +51,9 @@ void Player::Initialize(const XMFLOAT2& position)
     playerEnable = true;
 
     playerTex.Initialize(Direct3D_GetDevice(), L"resources/Santa_Claus.png");
+
+    lastMoveStatus = stopFront;
+    UpdateStatus();
 }
 
 void Player::Finalize()
@@ -69,21 +72,25 @@ void Player::UpdatePosition(double elapsed_time, Collision_Map& map, const ViewR
     {
         direction += {0.0f, -1.0f};
         playerFlip = false;
+        lastMoveStatus = walkBack;
     }
     if (KeyLogger_IsPressed(KK_A))
     {
         direction += {-1.0f, 0.0f};
         playerFlip = true;
+        lastMoveStatus = walkLeft;
     }
     if (KeyLogger_IsPressed(KK_S))
     {
         direction += {0.0f, 1.0f};
         playerFlip = false;
+        lastMoveStatus = walkFront;
     }
     if (KeyLogger_IsPressed(KK_D))
     {
         direction += {1.0f, 0.0f};
         playerFlip = false;
+        lastMoveStatus = walkRight;
     }
 
     if (XMVector2Equal(direction, XMVectorZero())) return;
@@ -124,12 +131,29 @@ void Player::UpdatePosition(double elapsed_time, Collision_Map& map, const ViewR
 
 void Player::UpdateStatus()
 {
-    Status newPlayerStatus = stand;
+    Status newPlayerStatus = stopFront;
 
     if (KeyLogger_IsPressed(KK_W)) newPlayerStatus = walkBack;
-    if (KeyLogger_IsPressed(KK_A)) newPlayerStatus = walkRight;
-    if (KeyLogger_IsPressed(KK_S)) newPlayerStatus = walkFront;
-    if (KeyLogger_IsPressed(KK_D)) newPlayerStatus = walkLeft;
+    else if (KeyLogger_IsPressed(KK_A)) newPlayerStatus = walkLeft;
+    else if (KeyLogger_IsPressed(KK_S)) newPlayerStatus = walkFront;
+    else if (KeyLogger_IsPressed(KK_D)) newPlayerStatus = walkRight;
+    else {
+        switch (lastMoveStatus)
+        {
+        case walkFront:
+            newPlayerStatus = stopFront;
+            break;
+        case walkLeft:
+            newPlayerStatus = stopLeft;
+            break;
+        case walkBack:
+            newPlayerStatus = stopBack;
+            break;
+        case walkRight:
+            newPlayerStatus = stopRight;
+            break;
+        }
+    }
 
     ChangeStatus(newPlayerStatus);
 }
@@ -149,16 +173,6 @@ void Player::ChangeStatus(Status newPlayerStatus)
     // register new animation
     switch (playerStatus)
     {
-    case stand:
-        playerAnimPlayId = SpriteAnim_CreatePlayer(
-            SpriteAnim_RegisterPattern(
-                playerTex, 1, 1,
-                PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
-                { 256.0f, 896.0f }, true
-            )
-        );
-        break;
-
     case walkFront:
         playerAnimPlayId = SpriteAnim_CreatePlayer(
             SpriteAnim_RegisterPattern(
@@ -169,12 +183,34 @@ void Player::ChangeStatus(Status newPlayerStatus)
         );
         break;
 
+    case stopFront:
+        playerAnimPlayId = SpriteAnim_CreatePlayer(
+            SpriteAnim_RegisterPattern(
+                playerTex, 1, 1,
+                PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
+                { 256.0f, 896.0f }, true
+            )
+        );
+        break;
+
     case walkLeft:
+    case walkRight:
         playerAnimPlayId = SpriteAnim_CreatePlayer(
             SpriteAnim_RegisterPattern(
                 playerTex, 6, 6,
                 PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
                 { 0.0f, 128.0f }, true
+            )
+        );
+        break;
+
+    case stopLeft:
+    case stopRight:
+        playerAnimPlayId = SpriteAnim_CreatePlayer(
+            SpriteAnim_RegisterPattern(
+                playerTex, 1, 1,
+                PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
+                { 256.0f, 1024.0f }, true
             )
         );
         break;
@@ -189,36 +225,76 @@ void Player::ChangeStatus(Status newPlayerStatus)
         );
         break;
 
-    case walkRight:
+    case stopBack:
         playerAnimPlayId = SpriteAnim_CreatePlayer(
             SpriteAnim_RegisterPattern(
-                playerTex, 6, 6,
+                playerTex, 1, 1,
                 PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
-                { 0.0f, 128.0f }, true
+                { 256.0f, 1152.0f }, true
             )
         );
         break;
     }
 }
 
-/*
-void Player::Update(double elapsed_time, const ViewRect& viewRect)
+void Player::Update(double elapsed_time, Collision_Map& map, const ViewRect& viewRect)
 {
-    if (!playerEnable) return;
-
-    UpdatePosition(elapsed_time);
+    UpdatePosition(elapsed_time, map, viewRect);
+    Shoot(elapsed_time);
     UpdateStatus();
 
     SetScreenPosition(viewRect);
+}
 
+
+XMFLOAT2 Player::GetShootDirection()
+{
+    XMFLOAT2 dir = { 0.0f, 0.0f };
+    XMVECTOR dirVec = {};
+
+    if (KeyLogger_IsPressed(KK_W)) dirVec += {0.0f, -1.0f};
+    if (KeyLogger_IsPressed(KK_A)) dirVec += {-1.0f, 0.0f};
+    if (KeyLogger_IsPressed(KK_S)) dirVec += {0.0f, 1.0f};
+    if (KeyLogger_IsPressed(KK_D)) dirVec += {1.0f, 0.0f};
+
+    if (XMVector2Equal(dirVec, XMVectorZero()))
+    {
+        switch (lastMoveStatus)
+        {
+        case walkFront:
+        case stopFront:
+            dirVec = { 0.0f, 1.0f };
+            break;
+        case walkLeft:
+        case stopLeft:
+            dirVec = { -1.0f, 0.0f };
+            break;
+        case walkBack:
+        case stopBack:
+            dirVec = { 0.0f, -1.0f };
+            break;
+        case walkRight:
+        case stopRight:
+            dirVec = { 1.0f, 0.0f };
+            break;
+        }
+    }
+
+    dirVec = XMVector2Normalize(dirVec);
+    XMStoreFloat2(&dir, dirVec);
+
+    return dir;
+}
+
+void Player::Shoot(double elapsed_time)
+{
     // ’e‚ð”­ŽË‚·‚é
     if (KeyLogger_IsTrigger(KK_SPACE))
     {
-        Bullet_Create({ playerWorldPosition.x + playerSize.x * 0.5f, playerWorldPosition.y + playerSize.y * 0.5f }, playerFlip);
+        Bullet_Create({ playerScreenPosition.x + playerSize.x * 0.5f, playerScreenPosition.y + playerSize.y * 0.5f },
+            GetShootDirection(), playerFlip);
     }
 }
-*/
-
 
 // NOTICE: IN THE SCREEN SPACE!!!
 
@@ -233,7 +309,7 @@ void Player::Draw()
 
 #if defined(DEBUG) || defined(_DEBUG)
 
-    //Collision_DebugDraw(playerTex, GetCircleCollision());
+    //Collision_DebugDraw(GetCircleCollision());
     Collision_DebugDraw(GetBoxCollision());
 
 #endif

@@ -30,6 +30,7 @@ Map::Map()
 
 Map::~Map()
 {
+
 }
 
 void Map::Initialize(const std::string& filePath)

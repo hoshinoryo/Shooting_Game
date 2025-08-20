@@ -1,11 +1,11 @@
-/*==============================================================================
-
-　 弾の制御 [bullet.h]
-                                                         Author : Youhei Sato
-                                                         Date   : 2025/07/01
---------------------------------------------------------------------------------
-
-==============================================================================*/
+// ==========================================================================================
+// 
+// File Name: bullet.h
+// Date: 2025/08/19
+// Author: Gu Anyi
+// Description: Bullet header file
+// 
+// ==========================================================================================
 
 #ifndef BULLET_H
 #define BULLET_H
@@ -22,7 +22,7 @@ void Bullet_Finalize();
 void Bullet_Update(double elapsed_time);
 void Bullet_Draw();
 
-void Bullet_Create(const DirectX::XMFLOAT2& position, bool isFlipX = false); // バレットを打つ
+void Bullet_Create(const DirectX::XMFLOAT2& position,const DirectX::XMFLOAT2 dir, bool isFlipX = false); // バレットを打つ
 
 bool Bullet_IsEnable(int index); // 弾の有効無効
 Circle Bullet_GetCollision(int index);

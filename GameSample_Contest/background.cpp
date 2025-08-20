@@ -37,5 +37,5 @@ void BG_Draw()
 {
     // debug mode: test background
 	// screen size: 1600x900
-    Sprite_Draw(g_TestBgTex, 0.0f, 0.0f, 1280.0f, 720.0f);
+    Sprite_Draw(g_TestBgTex, 200.0f, 100.0f, 1280.0f, 720.0f);
 }

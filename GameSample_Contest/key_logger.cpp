@@ -34,11 +34,11 @@ void KeyLogger_Update()
 		// 1 1 -> 0
 		// 0 0 -> 0
 		pt[i] = (pp[i] ^ pn[i]) & pn[i];
-		// 0 1 -> 0
-		// 1 0 -> 1
+		// 0 1 -> 1
+		// 1 0 -> 0
 		// 1 1 -> 0
 		// 0 0 -> 0
-		pr[i] = (pp[i] ^ pn[i]) & pn[i];
+		pr[i] = pp[i] & (~pn[i]);
 	}
 
 	g_PrevState = *pState; // キー状態更新
