@@ -20,16 +20,20 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "Collision_Full_Tileset.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "Collision_Tileset.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "test_map.tmx": {
-            "scale": 1,
+            "scale": 0.5,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 925.5,
-                "y": 376
+                "x": 861,
+                "y": 732
             }
         },
         "test_map.tmx#Collision": {
@@ -47,12 +51,14 @@
     "openFiles": [
         "Christmass_Tileset.tsx",
         "Collision_Tileset.tsx",
-        "test_map.tmx"
+        "test_map.tmx",
+        "Collision_Full_Tileset.tsx"
     ],
     "project": "map_background.tiled-project",
     "recentFiles": [
         "Christmass_Tileset.tsx",
         "Collision_Tileset.tsx",
+        "Collision_Full_Tileset.tsx",
         "test_map.tmx",
         "Christmass_Map.tsx"
     ],

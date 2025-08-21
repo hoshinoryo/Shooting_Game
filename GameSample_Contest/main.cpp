@@ -18,6 +18,7 @@
 #include "key_logger.h"
 #include "game.h"
 #include "collision.h"
+#include "scene.h"
 
 #pragma comment(lib, "xinput.lib")
 
@@ -54,7 +55,8 @@ int APIENTRY WinMain(
 	SpriteAnim_Initialize();
 	Polygon_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 
-	Game_Initialize();
+	//Game_Initialize();
+	Scene_Initialize();
 
 	hal::DebugText dt(Direct3D_GetDevice(), Direct3D_GetContext(),
 		L"consolab_ascii_512.png",
@@ -107,13 +109,15 @@ int APIENTRY WinMain(
 
 				// ゲームの更新
 				KeyLogger_Update();
-				Game_Update(elapsed_time);
+				//Game_Update(elapsed_time);
+				Scene_Update(elapsed_time);
 				SpriteAnim_Update(elapsed_time);
 				
 				// ゲームの描画
 				Direct3D_Clear();
 				Sprite_Begin();
-				Game_Draw();
+				//Game_Draw();
+				Scene_Draw();
 
 				// フレーム計測数表示
 #if defined(DEBUG) || defined(_DEBUG)
@@ -136,7 +140,8 @@ int APIENTRY WinMain(
 	
 	Collision_DebugFinalize();
 
-	Game_Finalize();
+	Scene_Finalize();
+	//Game_Finalize();
 
 	Polygon_Finalize();
 	SpriteAnim_Finalize();
