@@ -19,6 +19,7 @@
 #include "game.h"
 #include "collision.h"
 #include "scene.h"
+#include "fade.h"
 
 #pragma comment(lib, "xinput.lib")
 
@@ -53,6 +54,7 @@ int APIENTRY WinMain(
 	Shader_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 	Sprite_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 	SpriteAnim_Initialize();
+	Fade_Initialize();
 	Polygon_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 
 	//Game_Initialize();
@@ -112,12 +114,14 @@ int APIENTRY WinMain(
 				//Game_Update(elapsed_time);
 				Scene_Update(elapsed_time);
 				SpriteAnim_Update(elapsed_time);
+				Fade_Update(elapsed_time);
 				
 				// ゲームの描画
 				Direct3D_Clear();
 				Sprite_Begin();
 				//Game_Draw();
 				Scene_Draw();
+				Fade_Draw();
 
 				// フレーム計測数表示
 #if defined(DEBUG) || defined(_DEBUG)
@@ -131,19 +135,23 @@ int APIENTRY WinMain(
 #endif
 
 				Direct3D_Present();
+				Scene_Refresh();
 
 				frame_count++; //フレーム計測用
 			}
 		}
 
 	} while (msg.message != WM_QUIT);
-	
+
+#if defined(DEBUG) || defined(_DEBUG)	
 	Collision_DebugFinalize();
+#endif
 
 	Scene_Finalize();
 	//Game_Finalize();
 
 	Polygon_Finalize();
+	Fade_Finalize();
 	SpriteAnim_Finalize();
 	Sprite_Finalize();
 	Shader_Finalize();

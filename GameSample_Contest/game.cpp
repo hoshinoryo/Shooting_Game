@@ -18,6 +18,7 @@
 #include "camera.h"
 #include "map.h"
 #include "check_collision.h"
+#include "fade.h"
 
 // Debug output
 #include "debug_text.h"
@@ -35,6 +36,8 @@ std::string col_filePath = "resources/Tiled_Project/output/test_map_collisions.c
 
 Player testPlayer;
 Camera testCam;
+
+static bool g_GameStart = false;
 
 
 void Game_Initialize()
@@ -61,6 +64,9 @@ void Game_Initialize()
     //EnemySpawner_Create({                                 0.0f, 400.0f }, ENEMY_TYPE_02, 3.0f, 1.0, 4);
 
 	BG_Initialize();
+
+    Fade_Start(0.8f, false);
+    g_GameStart = false;
 }
 
 void Game_Finalize()
@@ -80,6 +86,11 @@ void Game_Finalize()
 
 void Game_Update(double elapsed_time)
 {
+    if (!g_GameStart && Fade_GetState() == FADE_STATE_FINISHED_IN)
+    {
+        g_GameStart = true;
+    }
+
     BG_Update(elapsed_time);
     //EnemySpawner_Update(elapsed_time);
     //Enemy_Update(elapsed_time);

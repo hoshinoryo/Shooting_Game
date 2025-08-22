@@ -3,7 +3,7 @@
 // File Name: scene.cpp
 // Date: 2025/08/21
 // Author: Gu Anyi
-// Description: Switch the scene
+// Description: Manage the scene
 // 
 // ==========================================================================================
 

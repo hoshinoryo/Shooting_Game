@@ -166,7 +166,7 @@ void Direct3D_Finalize()
 
 void Direct3D_Clear()
 {
-	float clear_color[4] = { 0.196f, 0.0f, 0.078f, 1.0f }; // BGF
+	float clear_color[4] = { 0.58f, 0.953f, 0.957f, 1.0f }; // BGF
 
 	g_pDeviceContext->ClearRenderTargetView(g_pRenderTargetView, clear_color);
 	g_pDeviceContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
