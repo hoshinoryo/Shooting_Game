@@ -10,9 +10,10 @@
 #include "scene.h"
 #include "game.h"
 #include "title.h"
+#include "guide.h"
 
 static Scene g_Scene = SCENE_TITLE;
-//static Scene g_Scene = SCENE_GAME; // debug
+//static Scene g_Scene = SCENE_GUIDE; // debug
 static Scene g_SceneNext = g_Scene;
 
 void Scene_Initialize()
@@ -22,10 +23,11 @@ void Scene_Initialize()
     case SCENE_TITLE:
         Title_Initialize();
         break;
+    case SCENE_GUIDE:
+        Guide_Initialize();
+        break;
     case SCENE_GAME:
         Game_Initialize();
-        break;
-    case SCENE_RESULT:
         break;
     }
 }
@@ -37,10 +39,11 @@ void Scene_Finalize()
     case SCENE_TITLE:
         Title_Finalize();
         break;
+    case SCENE_GUIDE:
+        Guide_Finalize();
+        break;
     case SCENE_GAME:
         Game_Finalize();
-        break;
-    case SCENE_RESULT:
         break;
     }
 }
@@ -52,10 +55,11 @@ void Scene_Update(double elapsed_time)
     case SCENE_TITLE:
         Title_Update(elapsed_time);
         break;
+    case SCENE_GUIDE:
+        Guide_Update(elapsed_time);
+        break;
     case SCENE_GAME:
         Game_Update(elapsed_time);
-        break;
-    case SCENE_RESULT:
         break;
     }
 }
@@ -67,10 +71,11 @@ void Scene_Draw()
     case SCENE_TITLE:
         Title_Draw();
         break;
+    case SCENE_GUIDE:
+        Guide_Draw();
+        break;
     case SCENE_GAME:
         Game_Draw();
-        break;
-    case SCENE_RESULT:
         break;
     }
 }

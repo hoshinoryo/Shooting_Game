@@ -14,7 +14,6 @@
 #include "collision.h"
 #include "effect.h"
 #include "direct3d.h"
-#include "background.h"
 #include "camera.h"
 #include "map.h"
 #include "check_collision.h"
@@ -63,7 +62,7 @@ void Game_Initialize()
     //EnemySpawner_Create({ (float)Direct3D_GetBackBufferWidth(), 200.0f }, ENEMY_TYPE_01, 4.0f, 2.0, 8);
     //EnemySpawner_Create({                                 0.0f, 400.0f }, ENEMY_TYPE_02, 3.0f, 1.0, 4);
 
-	BG_Initialize();
+	//BG_Initialize();
 
     Fade_Start(0.8f, false);
     g_GameStart = false;
@@ -71,7 +70,6 @@ void Game_Initialize()
 
 void Game_Finalize()
 {
-	BG_Finalize();
     //Effect_Finalize();
     //EnemySpawner_Finalize();
     //Enemy_Finalize();
@@ -91,7 +89,6 @@ void Game_Update(double elapsed_time)
         g_GameStart = true;
     }
 
-    BG_Update(elapsed_time);
     //EnemySpawner_Update(elapsed_time);
     //Enemy_Update(elapsed_time);
 
@@ -116,8 +113,6 @@ void Game_Update(double elapsed_time)
 
 void Game_Draw()
 {
-	BG_Draw();
-
     // Map Draw
     testMapMg.Draw(testCam.GetViewRect());
     testMapFg.Draw(testCam.GetViewRect());

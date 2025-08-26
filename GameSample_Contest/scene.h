@@ -20,8 +20,8 @@ void Scene_Refresh();
 enum Scene
 {
     SCENE_TITLE,
+    SCENE_GUIDE,
     SCENE_GAME,
-    SCENE_RESULT,
     SCENE_MAX
 };
 

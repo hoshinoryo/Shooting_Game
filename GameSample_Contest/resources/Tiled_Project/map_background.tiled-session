@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "test_map.tmx",
+    "activeFile": "title_map.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -40,12 +40,20 @@
             "scale": 0.5,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 879,
-                "y": 732
+                "x": 1665,
+                "y": 961
             }
         },
         "test_map.tmx#Collision": {
             "scaleInEditor": 1
+        },
+        "title_map.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 409.5,
+                "y": 518
+            }
         }
     },
     "last.exportedFilePath": "D:/GM11/GameSample_Contest/resources/Tiled_Project/output",
@@ -58,18 +66,19 @@
     "map.width": 25,
     "openFiles": [
         "Christmass_Tileset.tsx",
-        "Collision_Tileset.tsx",
         "test_map.tmx",
-        "Collision_Full_Tileset.tsx"
+        "title_map.tmx",
+        "Fence_Big_Tileset.tsx"
     ],
     "project": "map_background.tiled-project",
     "recentFiles": [
-        "Christmas_Deco_Tileset.tsx",
-        "Fence_Big_Tileset.tsx",
-        "Collision_Tileset.tsx",
-        "Collision_Full_Tileset.tsx",
         "Christmass_Tileset.tsx",
         "test_map.tmx",
+        "Fence_Big_Tileset.tsx",
+        "title_map.tmx",
+        "Christmas_Deco_Tileset.tsx",
+        "Collision_Tileset.tsx",
+        "Collision_Full_Tileset.tsx",
         "Christmass_Map.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",

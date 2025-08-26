@@ -1,11 +1,11 @@
-/*==============================================================================
-
-　 キーボード入力の機能[key_logger.cpp]
-														 Author : Youhei Sato
-														 Date   : 2025/06/27
---------------------------------------------------------------------------------
-
-==============================================================================*/
+// ==========================================================================================
+// 
+// File Name: key_logger.cpp
+// Date: 2025/08/26
+// Author: Gu Anyi
+// Description: Manage the keyboard states
+// 
+// ==========================================================================================
 #include "key_logger.h"
 
 static Keyboard_State g_PrevState{};
@@ -57,4 +57,11 @@ bool KeyLogger_IsTrigger(Keyboard_Keys key)
 bool KeyLogger_IsRelease(Keyboard_Keys key)
 {
 	return Keyboard_IsKeyDown(key, &g_ReleaseState);
+}
+
+void KeyLogger_Reset()
+{
+	ZeroMemory(&g_PrevState, sizeof(g_PrevState));
+	ZeroMemory(&g_TriggerState, sizeof(g_TriggerState));
+	ZeroMemory(&g_ReleaseState, sizeof(g_ReleaseState));
 }

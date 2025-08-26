@@ -50,14 +50,13 @@ int APIENTRY WinMain(
 	KeyLogger_Initialize();
 	Mouse_Initialize(hWnd);
 
-	Direct3D_Initialize(hWnd); // Direct3Dの初期化
+	Direct3D_Initialize(hWnd);
 	Shader_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 	Sprite_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 	SpriteAnim_Initialize();
 	Fade_Initialize();
 	Polygon_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
 
-	//Game_Initialize();
 	Scene_Initialize();
 
 	hal::DebugText dt(Direct3D_GetDevice(), Direct3D_GetContext(),
@@ -92,9 +91,7 @@ int APIENTRY WinMain(
 		}
 		else
 		{
-			// fps計測処理
-
-			current_time = SystemTimer_GetTime(); // 現在のシステム時刻を取得
+			current_time = SystemTimer_GetTime();
 			double elapsed_time = current_time - fps_last_time; // fps計測のための経過時間を計算
 
 			if (elapsed_time >= 1.0)
@@ -109,9 +106,10 @@ int APIENTRY WinMain(
 			{
 				exec_last_time = current_time;
 
+				Scene_Refresh();
+
 				// ゲームの更新
 				KeyLogger_Update();
-				//Game_Update(elapsed_time);
 				Scene_Update(elapsed_time);
 				SpriteAnim_Update(elapsed_time);
 				Fade_Update(elapsed_time);
@@ -119,7 +117,6 @@ int APIENTRY WinMain(
 				// ゲームの描画
 				Direct3D_Clear();
 				Sprite_Begin();
-				//Game_Draw();
 				Scene_Draw();
 				Fade_Draw();
 
@@ -135,7 +132,6 @@ int APIENTRY WinMain(
 #endif
 
 				Direct3D_Present();
-				Scene_Refresh();
 
 				frame_count++; //フレーム計測用
 			}
@@ -148,7 +144,6 @@ int APIENTRY WinMain(
 #endif
 
 	Scene_Finalize();
-	//Game_Finalize();
 
 	Polygon_Finalize();
 	Fade_Finalize();
