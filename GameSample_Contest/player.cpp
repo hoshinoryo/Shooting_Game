@@ -62,7 +62,7 @@ void Player::Finalize()
     playerTex.Finalize();
 }
 
-void Player::UpdatePosition(double elapsed_time, Collision_Map& map, const ViewRect& viewRect)
+void Player::UpdatePosition(double elapsed_time, Collision_Map& map)
 {
     XMFLOAT2 oldPos = playerWorldPosition;
     XMFLOAT2 newPos = oldPos;
@@ -106,7 +106,7 @@ void Player::UpdatePosition(double elapsed_time, Collision_Map& map, const ViewR
     newPos.x += move.x;
     Box playerBoxX = GetBoxCollision();
     playerBoxX.center.x += move.x;
-    if (CheckCollision_BoxVSMap(playerBoxX, map, viewRect))
+    if (CheckCollision_BoxVSMap(playerBoxX, map))
     {
         newPos.x = oldPos.x;
     }
@@ -115,7 +115,7 @@ void Player::UpdatePosition(double elapsed_time, Collision_Map& map, const ViewR
     newPos.y += move.y;
     Box playerBoxY = GetBoxCollision();
     playerBoxY.center.y += move.y;
-    if (CheckCollision_BoxVSMap(playerBoxY, map, viewRect))
+    if (CheckCollision_BoxVSMap(playerBoxY, map))
     {
         newPos.y = oldPos.y;
     }
@@ -238,13 +238,13 @@ void Player::ChangeStatus(Status newPlayerStatus)
     }
 }
 
-void Player::Update(double elapsed_time, Collision_Map& map, const ViewRect& viewRect)
+void Player::Update(double elapsed_time, Collision_Map& map)
 {
-    UpdatePosition(elapsed_time, map, viewRect);
+    UpdatePosition(elapsed_time, map);
     Shoot(elapsed_time);
     UpdateStatus();
 
-    SetScreenPosition(viewRect);
+    //SetScreenPosition(viewRect);
 }
 
 
@@ -292,16 +292,18 @@ void Player::Shoot(double elapsed_time)
     // ’e‚ð”­ŽË‚·‚é
     if (KeyLogger_IsTrigger(KK_SPACE))
     {
-        Bullet_Create({ playerScreenPosition.x + playerSize.x * 0.5f, playerScreenPosition.y + playerSize.y * 0.5f },
+        Bullet_Create({ playerWorldPosition.x + playerSize.x * 0.5f, playerWorldPosition.y + playerSize.y * 0.5f },
             GetShootDirection(), playerFlip);
     }
 }
 
 // NOTICE: IN THE SCREEN SPACE!!!
 
-void Player::Draw()
+void Player::Draw(const ViewRect& viewRect)
 {
     if (!playerEnable) return;
+
+    SetScreenPosition(viewRect);
 
     SpriteAnim_Draw(
         playerAnimPlayId, playerScreenPosition.x, playerScreenPosition.y,
@@ -309,9 +311,16 @@ void Player::Draw()
     );
 
 #if defined(DEBUG) || defined(_DEBUG)
+    
+    Circle c = GetCircleCollision();
+    c.center.x -= viewRect.rectPosition.x;
+    c.center.y -= viewRect.rectPosition.y;
+    Collision_DebugDraw(c);
 
-    //Collision_DebugDraw(GetCircleCollision());
-    Collision_DebugDraw(GetBoxCollision());
+    Box b = GetBoxCollision();
+    b.center.x -= viewRect.rectPosition.x;
+    b.center.y -= viewRect.rectPosition.y;
+    Collision_DebugDraw(b);
 
 #endif
 }
@@ -335,8 +344,8 @@ void Player::SetScreenPosition(const ViewRect& viewRect)
 
 Circle Player::GetCircleCollision()
 {
-    float cx = playerScreenPosition.x + playerCircleCollision.center.x;
-    float cy = playerScreenPosition.y + playerCircleCollision.center.y;
+    float cx = playerWorldPosition.x + playerCircleCollision.center.x;
+    float cy = playerWorldPosition.y + playerCircleCollision.center.y;
 
     return { { cx, cy }, playerCircleCollision.radius };
 }
@@ -346,7 +355,7 @@ Box Player::GetBoxCollision()
     //float half_width = playerSize.x * 0.5f;
     //float half_height = playerSize.y * 0.5f;
     //return { {playerScreenPosition.x + half_width, playerScreenPosition.y + half_height}, half_width, half_height };
-    return { { playerScreenPosition.x + playerBoxCollision.center.x, playerScreenPosition.y + playerBoxCollision.center.y },
+    return { { playerWorldPosition.x + playerBoxCollision.center.x, playerWorldPosition.y + playerBoxCollision.center.y },
         playerBoxCollision.half_width, playerBoxCollision.half_height };
 }
 

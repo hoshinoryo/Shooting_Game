@@ -32,8 +32,8 @@ struct EnemyConfig // 敵の配置
 };
 
 static EnemyConfig g_EnemyConfigs[ENEMY_TYPE_MAX] = {
-    { L"resources/Enemy_01.png", 1, { 128.0f, 128.0f } },
-    { L"resources/Enemy_02.png", 1, { 128.0f, 128.0f } }
+    { L"resources/Enemy_01.png", 3, { 128.0f, 128.0f } },
+    { L"resources/Enemy_02.png", 4, { 128.0f, 128.0f } }
 };
 
 
@@ -79,8 +79,7 @@ void Enemy::Finalize()
     enemyTex.Finalize();
 }
 
-void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos,
-    Collision_Map& map, const ViewRect& viewRect)
+void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos, Collision_Map& map)
 {
     if (!isEnable) return;
 
@@ -114,7 +113,7 @@ void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos,
     tryBox.center.x += tryVel.x * elapsed_time;
     tryBox.center.y += tryVel.y * elapsed_time;
 
-    if (!CheckCollision_BoxVSMap(tryBox, map, viewRect))
+    if (!CheckCollision_BoxVSMap(tryBox, map))
     {
         enemyWorldPosition = newPos;
         enemyVelocity = tryVel;
@@ -124,7 +123,7 @@ void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos,
         XMFLOAT2 velx = { tryVel.x, 0.0f };
         Box boxX = GetBoxCollision();
         boxX.center.x += velx.x * elapsed_time;
-        if (!CheckCollision_BoxVSMap(boxX, map, viewRect))
+        if (!CheckCollision_BoxVSMap(boxX, map))
         {
             enemyWorldPosition.x += velx.x * elapsed_time;
             enemyVelocity = velx;
@@ -134,7 +133,7 @@ void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos,
             XMFLOAT2 vely = { 0.0f, tryVel.y };
             Box boxY = GetBoxCollision();
             boxY.center.y += vely.y * elapsed_time;
-            if (!CheckCollision_BoxVSMap(boxY, map, viewRect))
+            if (!CheckCollision_BoxVSMap(boxY, map))
             {
                 enemyWorldPosition.y += vely.y * elapsed_time;
                 enemyVelocity = vely;
@@ -148,7 +147,7 @@ void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos,
 
     isFlipX = (dx > 0.0f);
 
-    SetScreenPosition(viewRect);
+    //SetScreenPosition(viewRect);
 
     /*
     // 画面の外出ると消える
@@ -160,9 +159,11 @@ void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos,
     */
 }
 
-void Enemy::Draw()
+void Enemy::Draw(const ViewRect& viewRect)
 {
     if (!isEnable) return;
+
+    SetScreenPosition(viewRect);
 
     SpriteAnim_Draw(
         enemyAnimPlayId, enemyScreenPosition.x, enemyScreenPosition.y,
@@ -173,8 +174,15 @@ void Enemy::Draw()
 
 #if defined(DEBUG) || defined(_DEBUG)
 
-    Collision_DebugDraw(GetBoxCollision());
-    Collision_DebugDraw(GetCircleCollision());
+    Circle c = GetCircleCollision();
+    c.center.x -= viewRect.rectPosition.x;
+    c.center.y -= viewRect.rectPosition.y;
+    Collision_DebugDraw(c);
+
+    Box b = GetBoxCollision();
+    b.center.x -= viewRect.rectPosition.x;
+    b.center.y -= viewRect.rectPosition.y;
+    Collision_DebugDraw(b);
 
 #endif
 }
@@ -192,15 +200,15 @@ bool Enemy::GetIsEnable()
 
 Circle Enemy::GetCircleCollision()
 {
-    float cx = enemyScreenPosition.x + enemyCircleCollision.center.x;
-    float cy = enemyScreenPosition.y + enemyCircleCollision.center.y;
+    float cx = enemyWorldPosition.x + enemyCircleCollision.center.x;
+    float cy = enemyWorldPosition.y + enemyCircleCollision.center.y;
 
     return { { cx, cy }, enemyCircleCollision.radius };
 }
 
 Box Enemy::GetBoxCollision()
 {
-    return { { enemyScreenPosition.x + enemyBoxCollision.center.x, enemyScreenPosition.y + enemyBoxCollision.center.y },
+    return { { enemyWorldPosition.x + enemyBoxCollision.center.x, enemyWorldPosition.y + enemyBoxCollision.center.y },
     enemyBoxCollision.half_width, enemyBoxCollision.half_height };
 }
 
@@ -261,25 +269,24 @@ void Enemy_Create(EnemyTypeID typeId, const DirectX::XMFLOAT2& position)
     }
 }
 
-void Enemy_UpdateAll(double elapsed_time, const XMFLOAT2& playerPos,
-    Collision_Map& map, const ViewRect& viewRect)
+void Enemy_UpdateAll(double elapsed_time, const XMFLOAT2& playerPos, Collision_Map& map)
 {
     for (int i = 0; i < ENEMIES_MAX; i++)
     {
         if (g_Enemies[i].GetIsEnable())
         {
-            g_Enemies[i].Update(elapsed_time, playerPos, map, viewRect);
+            g_Enemies[i].Update(elapsed_time, playerPos, map);
         }
     }
 }
 
-void Enemy_DrawAll()
+void Enemy_DrawAll(const ViewRect& viewRect)
 {
     for (int i = 0; i < ENEMIES_MAX; i++)
     {
         if (g_Enemies[i].GetIsEnable())
         {
-            g_Enemies[i].Draw();
+            g_Enemies[i].Draw(viewRect);
         }
     }
 }

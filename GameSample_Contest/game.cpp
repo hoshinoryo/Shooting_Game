@@ -89,9 +89,9 @@ void Game_Update(double elapsed_time)
     }
 
     EnemySpawner_Update(elapsed_time);
-    Enemy_UpdateAll(elapsed_time, testPlayer.GetWorldPosition(), testCollision, testCam.GetViewRect());
+    Enemy_UpdateAll(elapsed_time, testPlayer.GetWorldPosition(), testCollision);
 
-    testPlayer.Update(elapsed_time, testCollision, testCam.GetViewRect());
+    testPlayer.Update(elapsed_time, testCollision);
     Bullet_Update(elapsed_time);
 
     testCam.Update(testPlayer.GetWorldPosition());
@@ -117,10 +117,10 @@ void Game_Draw()
     testMapFg.Draw(testCam.GetViewRect());
     //testCollision.Draw(testCam.GetViewRect());
 
-    Bullet_Draw();
-    testPlayer.Draw();
+    Bullet_Draw(testCam.GetViewRect());
+    testPlayer.Draw(testCam.GetViewRect());
 
-    Enemy_DrawAll();
+    Enemy_DrawAll(testCam.GetViewRect());
 
     //Effect_Draw();
 }

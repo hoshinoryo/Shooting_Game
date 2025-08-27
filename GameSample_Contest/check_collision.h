@@ -12,11 +12,11 @@
 
 #include "map.h"
 #include "player.h"
-#include "camera.h"
+//#include "camera.h"
 
 void CheckCollision_BulletVSEnemy();
 void CheckCollision_PlayerVSEnemy(Player& player);
 
-bool CheckCollision_BoxVSMap(const Box& box, Collision_Map& map, const ViewRect& viewRect);
+bool CheckCollision_BoxVSMap(const Box& box, Collision_Map& map);
 
 #endif // CHECK_COLLISION_H

@@ -52,14 +52,14 @@ public:
 	void Initialize(const DirectX::XMFLOAT2& position);
 	void Finalize();
 
-	void UpdatePosition(double elapsed_time, Collision_Map& map, const ViewRect& viewRect);
+	void UpdatePosition(double elapsed_time, Collision_Map& map);
 	void UpdateStatus();
 	void ChangeStatus(Status newPlayerStatus);
-	void Update(double elapsed_time, Collision_Map& map, const ViewRect& viewRect);
+	void Update(double elapsed_time, Collision_Map& map);
 	
 	DirectX::XMFLOAT2 GetShootDirection();
 	void Shoot(double elapsed_time);
-	void Draw();
+	void Draw(const ViewRect& viewRect);
 
 	bool GetIsEnable();
 

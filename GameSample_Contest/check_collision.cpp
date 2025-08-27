@@ -30,7 +30,7 @@ void CheckCollision_BulletVSEnemy()
             if (Collision_CheckCircle(
                 Bullet_GetCollision(bi),
                 g_Enemies[ei].GetCircleCollision()
-            ))
+            )) // world coordinate
             {
                 Bullet_Destroy(bi);
                 g_Enemies[ei].Damage();
@@ -59,17 +59,17 @@ void CheckCollision_PlayerVSEnemy(Player& player)
 }
 
 
-bool CheckCollision_BoxVSMap(const Box& box, Collision_Map& map, const ViewRect& viewRect)
+bool CheckCollision_BoxVSMap(const Box& worldBox, Collision_Map& map)
 {
-    Box worldPlayerBox = box;
-    worldPlayerBox.center.x += viewRect.rectPosition.x;
-    worldPlayerBox.center.y += viewRect.rectPosition.y;
+    //Box worldPlayerBox = box;
+    //worldPlayerBox.center.x += viewRect.rectPosition.x;
+    //worldPlayerBox.center.y += viewRect.rectPosition.y;
 
     // Map chip around the player
-    int leftTile   = map.GetWorldToMapX(worldPlayerBox.center.x - worldPlayerBox.half_width);
-    int rightTile  = map.GetWorldToMapX(worldPlayerBox.center.x + worldPlayerBox.half_width);
-    int topTile    = map.GetWorldToMapY(worldPlayerBox.center.y - worldPlayerBox.half_height);
-    int bottomTile = map.GetWorldToMapY(worldPlayerBox.center.y + worldPlayerBox.half_height);
+    int leftTile   = map.GetWorldToMapX(worldBox.center.x - worldBox.half_width);
+    int rightTile  = map.GetWorldToMapX(worldBox.center.x + worldBox.half_width);
+    int topTile    = map.GetWorldToMapY(worldBox.center.y - worldBox.half_height);
+    int bottomTile = map.GetWorldToMapY(worldBox.center.y + worldBox.half_height);
 
     for (int ty = topTile; ty <= bottomTile; ty++)
     {
@@ -85,7 +85,7 @@ bool CheckCollision_BoxVSMap(const Box& box, Collision_Map& map, const ViewRect&
 
             for (const auto& box : chipBoxes)
             {
-                if (Collision_CheckBox(worldPlayerBox, box))
+                if (Collision_CheckBox(worldBox, box))
                 {
                     return true;
                 }
