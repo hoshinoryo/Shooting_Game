@@ -6,6 +6,7 @@
 // Description: Manage the bullet generation and control
 // 
 // ==========================================================================================
+
 #include "bullet.h"
 #include "player.h"
 #include "direct3d.h"
@@ -25,7 +26,7 @@ struct Bullet
     XMFLOAT2 size;
     double life_time;
     bool isEnable;
-    Circle collision;
+    Circle collision; // screen coordinate
 };
 
 static Bullet g_Bullets[BULLETS_MAX] = {};
@@ -122,6 +123,7 @@ Circle Bullet_GetCollision(int index)
 {
     float cx = g_Bullets[index].collision.center.x + g_Bullets[index].position.x;
     float cy = g_Bullets[index].collision.center.y + g_Bullets[index].position.y;
+
     return { {cx, cy}, g_Bullets[index].collision.radius };
 }
 

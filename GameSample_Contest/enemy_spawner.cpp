@@ -1,33 +1,36 @@
-/*==============================================================================
+// ==========================================================================================
+// 
+// File Name: enemy_spawner.cpp
+// Date: 2025/08/27
+// Author: Gu Anyi
+// Description: Initialize the enemy
+// 
+// ==========================================================================================
 
-　 敵の発生制御 [enemy_spawner.cpp]
-                                                         Author : Youhei Sato
-                                                         Date   : 2025/07/02
---------------------------------------------------------------------------------
-
-==============================================================================*/
 #include "enemy_spawner.h"
 #include "debug_ostream.h"
 
 #include <DirectXMath.h>
+
 using namespace DirectX;
+
 
 struct EnemySpawn
 {
     XMFLOAT2 position;
     EnemyTypeID id;
-    int count; // 発生最大数
+    int count;
     double time; // 発生器実行時間
-    double rate; // 生成間隔（1体ごとに何秒あけて出すか）
-    double spawn_time; // 次に生成する予定の時間（＝タイムスタンプ）
-    int spawn_count; // 現在までに出現させた敵の数
-    bool isFinished; // 最大数まで出し終えたか
+    double rate; // 生成間隔
+    double spawn_time; // 次に生成する予定の時間
+    int spawn_count;
+    bool isFinished;
 };
 
 static constexpr unsigned int ENEMY_SPAWNER_MAX = 100;
 static EnemySpawn g_EnemySpawners[ENEMY_SPAWNER_MAX] = {};
-static int g_SpawnerCount = 0; // 登録数
-static double g_Time = 0.0f; // グローバル変数
+static int g_SpawnerCount = 0;
+static double g_Time = 0.0f;
 
 void EnemySpawner_Initialize()
 {
@@ -37,20 +40,28 @@ void EnemySpawner_Initialize()
 
 void EnemySpawner_Finalize()
 {
+    for (int i = 0; i < ENEMIES_MAX; i++)
+    {
+        g_Enemies[i].Finalize();
+    }
+
+    g_SpawnerCount = 0;
+    g_Time = 0.0;
 }
 
 void EnemySpawner_Update(double elapsed_time)
 {
-    g_Time += elapsed_time; // 現在の経過時間（秒）を表す全体タイマー
+    g_Time += elapsed_time;
 
     for (int i = 0; i < g_SpawnerCount; i++)
     {
-        if (g_EnemySpawners[i].isFinished) continue; // 終わったらやつは触らない
+        if (g_EnemySpawners[i].isFinished) continue;
+
         if (g_EnemySpawners[i].time > g_Time) break;
 
         if (g_EnemySpawners[i].spawn_count == 0)
         {
-            g_EnemySpawners[i].spawn_time = g_Time - g_EnemySpawners[i].rate - 0.00001; // doubleの誤差
+            g_EnemySpawners[i].spawn_time = g_Time - g_EnemySpawners[i].rate - 0.00001;
         }
 
         if ((g_Time - g_EnemySpawners[i].spawn_time) >= g_EnemySpawners[i].rate)
@@ -81,5 +92,4 @@ void EnemySpawner_Create(const XMFLOAT2& position, EnemyTypeID id, double spawn_
     pEs->spawn_count = 0;
     pEs->spawn_time = 0.0;
     g_SpawnerCount++;
-    hal::dout << g_SpawnerCount << std::endl;
 }

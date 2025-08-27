@@ -6,6 +6,7 @@
 // Description: Manage the player character
 // 
 // ==========================================================================================
+
 #include "player.h"
 #include "sprite.h"
 #include "sprite_anim.h"
@@ -68,31 +69,27 @@ void Player::UpdatePosition(double elapsed_time, Collision_Map& map, const ViewR
 
     XMVECTOR direction = {};
 
-    if (KeyLogger_IsPressed(KK_W))
-    {
-        direction += {0.0f, -1.0f};
-        playerFlip = false;
-        lastMoveStatus = walkBack;
-    }
     if (KeyLogger_IsPressed(KK_A))
     {
         direction += {-1.0f, 0.0f};
-        playerFlip = true;
         lastMoveStatus = walkLeft;
-    }
-    if (KeyLogger_IsPressed(KK_S))
-    {
-        direction += {0.0f, 1.0f};
-        playerFlip = false;
-        lastMoveStatus = walkFront;
     }
     if (KeyLogger_IsPressed(KK_D))
     {
         direction += {1.0f, 0.0f};
-        playerFlip = false;
         lastMoveStatus = walkRight;
     }
-
+    if (KeyLogger_IsPressed(KK_W))
+    {
+        direction += {0.0f, -1.0f};
+        lastMoveStatus = walkBack;
+    }
+    if (KeyLogger_IsPressed(KK_S))
+    {
+        direction += {0.0f, 1.0f};
+        lastMoveStatus = walkFront;
+    }
+    
     if (XMVector2Equal(direction, XMVectorZero())) return;
 
     direction = XMVector2Normalize(direction);
@@ -101,12 +98,15 @@ void Player::UpdatePosition(double elapsed_time, Collision_Map& map, const ViewR
     XMFLOAT2 move;
     XMStoreFloat2(&move, moveVec);
 
+    if (move.x < 0.0f) playerFlip = true;
+    else if (move.x >= 0.0f) playerFlip = false;
+
     // check collision with seperated x axis and y axis
     // x axis
     newPos.x += move.x;
     Box playerBoxX = GetBoxCollision();
     playerBoxX.center.x += move.x;
-    if (CheckCollision_PlayerBoxVSMap(playerBoxX, map, viewRect))
+    if (CheckCollision_BoxVSMap(playerBoxX, map, viewRect))
     {
         newPos.x = oldPos.x;
     }
@@ -115,7 +115,7 @@ void Player::UpdatePosition(double elapsed_time, Collision_Map& map, const ViewR
     newPos.y += move.y;
     Box playerBoxY = GetBoxCollision();
     playerBoxY.center.y += move.y;
-    if (CheckCollision_PlayerBoxVSMap(playerBoxY, map, viewRect))
+    if (CheckCollision_BoxVSMap(playerBoxY, map, viewRect))
     {
         newPos.y = oldPos.y;
     }
@@ -133,10 +133,11 @@ void Player::UpdateStatus()
 {
     Status newPlayerStatus = stopFront;
 
-    if (KeyLogger_IsPressed(KK_W)) newPlayerStatus = walkBack;
-    else if (KeyLogger_IsPressed(KK_A)) newPlayerStatus = walkLeft;
-    else if (KeyLogger_IsPressed(KK_S)) newPlayerStatus = walkFront;
+    if (KeyLogger_IsPressed(KK_A)) newPlayerStatus = walkLeft;
     else if (KeyLogger_IsPressed(KK_D)) newPlayerStatus = walkRight;
+    else if (KeyLogger_IsPressed(KK_W)) newPlayerStatus = walkBack;
+    else if (KeyLogger_IsPressed(KK_S)) newPlayerStatus = walkFront;
+
     else {
         switch (lastMoveStatus)
         {
@@ -320,7 +321,7 @@ bool Player::GetIsEnable()
     return playerEnable;
 }
 
-void Player::SetWorldPosition(DirectX::XMFLOAT2& position)
+void Player::SetWorldPosition(XMFLOAT2& position)
 {
     playerWorldPosition.x = position.x;
     playerWorldPosition.y = position.y;

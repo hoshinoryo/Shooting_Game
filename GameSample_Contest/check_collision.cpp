@@ -12,9 +12,6 @@
 #include "enemy.h"
 #include "bullet.h"
 
-#include "debug_text.h"
-#include "debug_ostream.h"
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -28,15 +25,15 @@ void CheckCollision_BulletVSEnemy()
 
         for (int ei = 0; ei < ENEMIES_MAX; ei++)
         {
-            if (!Enemy_IsEnable(ei)) continue;
+            if (!g_Enemies[ei].GetIsEnable()) continue;
+
             if (Collision_CheckCircle(
                 Bullet_GetCollision(bi),
-                Enemy_GetCollision(ei)
+                g_Enemies[ei].GetCircleCollision()
             ))
             {
-                // ƒqƒbƒg‚³‚ê‚½‚ç
                 Bullet_Destroy(bi);
-                Enemy_Damage(ei);
+                g_Enemies[ei].Damage();
             }
         }
     }
@@ -48,23 +45,23 @@ void CheckCollision_PlayerVSEnemy(Player& player)
 
     for (int ei = 0; ei < ENEMIES_MAX; ei++)
     {
-        if (!Enemy_IsEnable(ei)) continue;
+        if (!g_Enemies[ei].GetIsEnable()) continue;
 
         if (Collision_CheckCircle(
             player.GetCircleCollision(),
-            Enemy_GetCollision(ei)
-        )) // ƒqƒbƒg‚³‚ê‚½‚ç
+            g_Enemies[ei].GetCircleCollision()
+        ))
         {
             player.Destroy();
-            Enemy_Destroy(ei);
+            g_Enemies[ei].Destroy();
         }
     }
 }
 
 
-bool CheckCollision_PlayerBoxVSMap(const Box& playerBox, Collision_Map& map, const ViewRect& viewRect)
+bool CheckCollision_BoxVSMap(const Box& box, Collision_Map& map, const ViewRect& viewRect)
 {
-    Box worldPlayerBox = playerBox;
+    Box worldPlayerBox = box;
     worldPlayerBox.center.x += viewRect.rectPosition.x;
     worldPlayerBox.center.y += viewRect.rectPosition.y;
 

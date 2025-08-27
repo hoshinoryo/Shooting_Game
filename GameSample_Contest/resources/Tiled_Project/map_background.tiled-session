@@ -48,11 +48,11 @@
             "scaleInEditor": 1
         },
         "title_map.tmx": {
-            "scale": 1,
-            "selectedLayer": 1,
+            "scale": 0.5,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 409.5,
-                "y": 518
+                "x": 852,
+                "y": 617
             }
         }
     },

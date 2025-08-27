@@ -12,8 +12,8 @@
 #include "title.h"
 #include "guide.h"
 
-static Scene g_Scene = SCENE_TITLE;
-//static Scene g_Scene = SCENE_GUIDE; // debug
+//static Scene g_Scene = SCENE_TITLE;
+static Scene g_Scene = SCENE_GAME; // debug
 static Scene g_SceneNext = g_Scene;
 
 void Scene_Initialize()

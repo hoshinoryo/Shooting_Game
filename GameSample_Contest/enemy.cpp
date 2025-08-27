@@ -1,168 +1,285 @@
-/*==============================================================================
+// ==========================================================================================
+// 
+// File Name: enemy.cpp
+// Date: 2025/08/27
+// Author: Gu Anyi
+// Description: Enemy class describtion
+// 
+// ==========================================================================================
 
-　 敵の制御 [enemy.cpp]
-                                                         Author : Youhei Sato
-                                                         Date   : 2025/07/02
---------------------------------------------------------------------------------
-
-==============================================================================*/
 #include "enemy.h"
 #include "texture.h"
 #include "sprite.h"
+#include "sprite_anim.h"
 #include "direct3d.h"
 #include "effect.h"
+#include "check_collision.h"
+
 #include <DirectXMath.h>
 
 using namespace DirectX;
 
-// EnemyTypeは種類の設計図で、Enemyは実際に生成された敵
-// EnemyはtypeIdを使ってEnemyTypeと紐づき、種類ごとのテクスチャや当たり判定などを取得する
 
-struct EnemyType // 敵の種類
+static constexpr float ENEMY_SPEED = 100.0f;
+
+Enemy g_Enemies[ENEMIES_MAX] = {};
+
+struct EnemyConfig // 敵の配置
 {
-    int texId;
-    bool isFlipX;
-
-    XMFLOAT2 velocity; // 速度
-    Circle collision;  // 敵のコリジョン
-    int hp;            // 最大hp
+    const wchar_t* texPath;
+    int hpMax;
+    XMFLOAT2 size;
 };
 
-struct Enemy // 敵個体
-{
-    int typeId;      // EnemyTypeとつながる引数
-    XMFLOAT2 position;
-    float offsetY;
-    double lifeTime; // 生きてる時間の計算
-    int hp;          // hp状態
-    bool isEnable;
-    bool isDamaged;
-    bool isFacingLeft;
+static EnemyConfig g_EnemyConfigs[ENEMY_TYPE_MAX] = {
+    { L"resources/Enemy_01.png", 1, { 128.0f, 128.0f } },
+    { L"resources/Enemy_02.png", 1, { 128.0f, 128.0f } }
 };
 
-static constexpr float ENEMY_WIDTH = 96.0f;
-static constexpr float ENEMY_HEIGHT = 132.0f;
 
-static Enemy g_Enemies[ENEMIES_MAX] = {};
-static int g_EnemyTexid = -1;
-
-static EnemyType g_EnemyType[] = { 
-    {-1, 1, { -200.0f, 0.0f }, { { ENEMY_WIDTH * 0.5f, ENEMY_HEIGHT * 0.5f }, ENEMY_WIDTH * 0.5f }, 2 },
-    {-1, 0, {  200.0f, 0.0f }, { { ENEMY_WIDTH * 0.5f, ENEMY_HEIGHT * 0.5f }, ENEMY_WIDTH * 0.5f }, 2 }
-}; // enemyタイプごとにコリジョンのサイズ
-
-
-void Enemy_Initialize()
+Enemy::Enemy()
 {
-    for (Enemy& e : g_Enemies)
+    typeId = ENEMY_TYPE_MAX;
+    enemyWorldPosition = {};
+    enemyScreenPosition = {};
+    enemyVelocity = {};
+    enemySize = {};
+    lifeTime = 0.0;
+    hp = 1;
+    enemyAnimPlayId = -1;
+    enemyCircleCollision = { { 64.0f, 64.0f }, 28.0f };
+    enemyBoxCollision = { { 64.0f, 92.0f }, 24.0f, 10.0f }; // test collision box
+    isEnable = false;
+    isDamaged = false;
+    isFlipX = false;
+}
+
+void Enemy::Initialize(EnemyTypeID id, const XMFLOAT2& pos)
+{
+    typeId = id;
+    enemyWorldPosition = pos;
+    enemyScreenPosition = {};
+
+    // from EnemyConfig
+    hp = g_EnemyConfigs[typeId].hpMax;
+    enemySize = g_EnemyConfigs[typeId].size;
+    enemyTex.Initialize(Direct3D_GetDevice(), g_EnemyConfigs[typeId].texPath);
+    enemyAnimPlayId = SpriteAnim_CreatePlayer(
+        SpriteAnim_RegisterPattern(enemyTex, 6, 6, 0.1f, { enemySize.x, enemySize.y },
+            { 0.0f, 128.0f }, true)
+    );
+
+    lifeTime = 0.0;
+    isEnable = true;
+    isDamaged = false;
+}
+
+void Enemy::Finalize()
+{
+    enemyTex.Finalize();
+}
+
+void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos,
+    Collision_Map& map, const ViewRect& viewRect)
+{
+    if (!isEnable) return;
+
+    lifeTime += elapsed_time;
+
+    if (lifeTime >= 30.0f)
     {
-        e.isEnable = false;
+        Destroy();
+        return;
     }
 
-    //g_EnemyType[0].texId = Texture_Load(L"resources/enemy_01.png");
-    //g_EnemyType[1].texId = Texture_Load(L"resources/enemy_02.png");
-}
-
-void Enemy_Finalize()
-{
-}
-
-void Enemy_Update(double elapsed_time)
-{
-    for (Enemy& e : g_Enemies) // bulletの生成とそっくり
+    // direction vector towards the player
+    float dx = playerWorldPos.x - enemyWorldPosition.x;
+    float dy = playerWorldPos.y - enemyWorldPosition.y;
+    float len = sqrtf(dx * dx + dy * dy);
+    if (len > 0.0001f)
     {
-        if (!e.isEnable) continue;
+        dx /= len;
+        dy /= len;
+    }
 
-        switch (e.typeId)
+    // trying to move
+    XMFLOAT2 tryVel = { dx * ENEMY_SPEED, dy * ENEMY_SPEED };
+
+    XMFLOAT2 oldPos = enemyWorldPosition;
+    XMFLOAT2 newPos = oldPos;
+    newPos.x += tryVel.x * elapsed_time;
+    newPos.y += tryVel.y * elapsed_time;
+
+    Box tryBox = GetBoxCollision();
+    tryBox.center.x += tryVel.x * elapsed_time;
+    tryBox.center.y += tryVel.y * elapsed_time;
+
+    if (!CheckCollision_BoxVSMap(tryBox, map, viewRect))
+    {
+        enemyWorldPosition = newPos;
+        enemyVelocity = tryVel;
+    }
+    else // have collision, first try x axis then try y axis
+    {
+        XMFLOAT2 velx = { tryVel.x, 0.0f };
+        Box boxX = GetBoxCollision();
+        boxX.center.x += velx.x * elapsed_time;
+        if (!CheckCollision_BoxVSMap(boxX, map, viewRect))
         {
-        case ENEMY_TYPE_01:
-            XMVECTOR position = XMLoadFloat2(&e.position);
-            XMVECTOR velocity = XMLoadFloat2(&g_EnemyType[e.typeId].velocity);
-
-            position += velocity * elapsed_time;
-
-            XMStoreFloat2(&e.position, position);
-            XMStoreFloat2(&g_EnemyType[e.typeId].velocity, velocity);
-            break;
-
-        case ENEMY_TYPE_02:
-            e.position.x += g_EnemyType[e.typeId].velocity.x * elapsed_time;
-            e.position.y = e.offsetY + sinf(e.lifeTime * 2) * 200.0f;
-            break;
+            enemyWorldPosition.x += velx.x * elapsed_time;
+            enemyVelocity = velx;
         }
-
-        e.lifeTime += elapsed_time;
-
-        // 画面の外出ると消える
-        if (e.position.x +  ENEMY_WIDTH < 0.0f)
+        else
         {
-            e.isEnable = false;
+            XMFLOAT2 vely = { 0.0f, tryVel.y };
+            Box boxY = GetBoxCollision();
+            boxY.center.y += vely.y * elapsed_time;
+            if (!CheckCollision_BoxVSMap(boxY, map, viewRect))
+            {
+                enemyWorldPosition.y += vely.y * elapsed_time;
+                enemyVelocity = vely;
+            }
+            else // totally stuck
+            {
+                enemyVelocity = { 0.0f, 0.0f };
+            }
         }
     }
+
+    isFlipX = (dx > 0.0f);
+
+    SetScreenPosition(viewRect);
+
+    /*
+    // 画面の外出ると消える
+    if (enemyScreenPosition.x + enemySize.x * 0.5f < 0.0f || enemyScreenPosition.x + enemySize.x * 0.5f > 1600.0f ||
+        enemyScreenPosition.y < -enemySize.y || enemyScreenPosition.y > 900.0f)
+    {
+        isEnable = false;
+    }
+    */
 }
 
-void Enemy_Draw()
+void Enemy::Draw()
 {
-    for (Enemy& e : g_Enemies)
-    {
-        if (!e.isEnable) continue;
+    if (!isEnable) return;
 
-        //Sprite_Draw(g_EnemyType[e.typeId].texId, e.position.x, e.position.y, ENEMY_WIDTH, ENEMY_HEIGHT, e.isFacingLeft,
-        //    e.isDamaged ? XMFLOAT4{1.0f, 1.0f, 0.0f, 1.0f} : XMFLOAT4{1.0f, 1.0f, 1.0f, 1.0f});
-        e.isDamaged = false;
+    SpriteAnim_Draw(
+        enemyAnimPlayId, enemyScreenPosition.x, enemyScreenPosition.y,
+        enemySize.x, enemySize.y, isFlipX
+    );
+
+    isDamaged = false;
+
+#if defined(DEBUG) || defined(_DEBUG)
+
+    Collision_DebugDraw(GetBoxCollision());
+    Collision_DebugDraw(GetCircleCollision());
+
+#endif
+}
+
+
+void Enemy::SetIsEnable(bool enable)
+{
+    isEnable = enable;
+}
+
+bool Enemy::GetIsEnable()
+{
+    return isEnable;
+}
+
+Circle Enemy::GetCircleCollision()
+{
+    float cx = enemyScreenPosition.x + enemyCircleCollision.center.x;
+    float cy = enemyScreenPosition.y + enemyCircleCollision.center.y;
+
+    return { { cx, cy }, enemyCircleCollision.radius };
+}
+
+Box Enemy::GetBoxCollision()
+{
+    return { { enemyScreenPosition.x + enemyBoxCollision.center.x, enemyScreenPosition.y + enemyBoxCollision.center.y },
+    enemyBoxCollision.half_width, enemyBoxCollision.half_height };
+}
+
+XMFLOAT2 Enemy::GetWorldPosition()
+{
+    return enemyWorldPosition;
+}
+
+XMFLOAT2 Enemy::GetScreenPosition()
+{
+    return enemyScreenPosition;
+}
+
+void Enemy::SetScreenPosition(const ViewRect& viewRect)
+{
+    enemyScreenPosition.x = enemyWorldPosition.x - viewRect.rectPosition.x;
+    enemyScreenPosition.y = enemyWorldPosition.y - viewRect.rectPosition.y;
+}
+
+int Enemy::GetHp()
+{
+    return hp;
+}
+
+void Enemy::Damage()
+{
+    if (lifeTime < 1.0) return;
+
+    isDamaged = true;
+    hp--;
+
+    if (hp <= 0)
+    {
+        Destroy();
     }
 }
 
-void Enemy_Create(EnemyTypeID enemyType, const DirectX::XMFLOAT2& position)
+void Enemy::Destroy()
 {
-    for (Enemy& e : g_Enemies)
-    {
-        if (e.isEnable) continue;
-
-        // 空き領域発見
-        e.isEnable  = true;
-        e.isDamaged = false;
-        e.typeId = enemyType;
-        e.offsetY = position.y;
-        e.position = position;
-        e.lifeTime = 0.0;
-        e.hp = g_EnemyType[e.typeId].hp;
-        e.isFacingLeft = g_EnemyType[e.typeId].isFlipX;
-
-        break;
-    }
-}
-
-bool Enemy_IsEnable(int index)
-{
-    return g_Enemies[index].isEnable;
-}
-
-Circle Enemy_GetCollision(int index)
-{
-    int id = g_Enemies[index].typeId;
-    float cx = g_Enemies[index].position.x + g_EnemyType[id].collision.center.x;
-    float cy = g_Enemies[index].position.y + g_EnemyType[id].collision.center.y;
-    return { {cx, cy }, g_EnemyType[id].collision.radius };
-}
-
-
-void Enemy_Destroy(int index)
-{
+    /*
     Effect_Create({
-        g_Enemies[index].position.x + ENEMY_WIDTH  * 0.5f - 70.0f,
-        g_Enemies[index].position.y + ENEMY_HEIGHT * 0.5f - 70.0f
+        enemyWorldPosition.x + enemySize.x * 0.5f,
+        enemyWorldPosition.y + enemySize.y * 0.5f
         });
-    g_Enemies[index].isEnable = false;
+    */
+    isEnable = false;
 }
 
-void Enemy_Damage(int index)
+void Enemy_Create(EnemyTypeID typeId, const DirectX::XMFLOAT2& position)
 {
-    g_Enemies[index].isDamaged = true;
-    g_Enemies[index].hp--;
-
-    if (g_Enemies[index].hp <= 0)
+    for (int i = 0; i < ENEMIES_MAX; i++)
     {
-        Enemy_Destroy(index);
+        if (!g_Enemies[i].GetIsEnable())
+        {
+            g_Enemies[i].Initialize(typeId, position);
+            break;
+        }
+    }
+}
+
+void Enemy_UpdateAll(double elapsed_time, const XMFLOAT2& playerPos,
+    Collision_Map& map, const ViewRect& viewRect)
+{
+    for (int i = 0; i < ENEMIES_MAX; i++)
+    {
+        if (g_Enemies[i].GetIsEnable())
+        {
+            g_Enemies[i].Update(elapsed_time, playerPos, map, viewRect);
+        }
+    }
+}
+
+void Enemy_DrawAll()
+{
+    for (int i = 0; i < ENEMIES_MAX; i++)
+    {
+        if (g_Enemies[i].GetIsEnable())
+        {
+            g_Enemies[i].Draw();
+        }
     }
 }
