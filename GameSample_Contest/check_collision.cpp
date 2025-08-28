@@ -52,7 +52,7 @@ void CheckCollision_PlayerVSEnemy(Player& player)
             g_Enemies[ei].GetCircleCollision()
         ))
         {
-            player.Destroy();
+            player.Damage();
             g_Enemies[ei].Destroy();
         }
     }

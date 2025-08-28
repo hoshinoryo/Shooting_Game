@@ -35,7 +35,7 @@ private:
     DirectX::XMFLOAT2 enemyVelocity;
     DirectX::XMFLOAT2 enemySize;
     double lifeTime;
-    int hp;
+    int enemyHp;
     Texture enemyTex;
     int enemyAnimPlayId;
     Circle enemyCircleCollision;
@@ -43,6 +43,7 @@ private:
     bool isEnable;
     bool isDamaged;
     bool isFlipX;
+    float damagedTimer;
 
 public:
 

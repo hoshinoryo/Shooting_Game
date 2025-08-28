@@ -19,7 +19,7 @@ void SpriteAnim_Initialize();
 void SpriteAnim_Finalize();
 
 void SpriteAnim_Update(double elapsed_time);
-void SpriteAnim_Draw(int playid, float dx, float dy, float dw, float dh, bool isFlipX);
+void SpriteAnim_Draw(int playid, float dx, float dy, float dw, float dh, bool isFlipX, const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f });
 
 // パターン登録用
 int SpriteAnim_RegisterPattern(

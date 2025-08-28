@@ -37,6 +37,7 @@ Player::Player()
     playerCircleCollision = { { 64.0f, 92.0f }, 20.0f };
     playerBoxCollision = { { 64.0f, 92.0f }, 24.0f, 10.0f }; // test collision box
     playerEnable = true;
+    playerHp = 0;
     playerStatus = none;
     lastMoveStatus = none;
 }
@@ -50,6 +51,7 @@ void Player::Initialize(const XMFLOAT2& position)
     playerSize = { 128.0f, 128.0f };
     playerFlip = false;
     playerEnable = true;
+    playerHp = 5;
 
     playerTex.Initialize(Direct3D_GetDevice(), L"resources/Santa_Claus.png");
 
@@ -330,6 +332,11 @@ bool Player::GetIsEnable()
     return playerEnable;
 }
 
+int Player::GetHp()
+{
+    return playerHp;
+}
+
 void Player::SetWorldPosition(XMFLOAT2& position)
 {
     playerWorldPosition.x = position.x;
@@ -372,6 +379,16 @@ XMFLOAT2 Player::GetScreenPosition()
 XMFLOAT2 Player::GetSize()
 {
     return playerSize;
+}
+
+void Player::Damage()
+{
+    playerHp--;
+
+    if (playerHp <= 0)
+    {
+        Destroy();
+    }
 }
 
 void Player::Destroy()

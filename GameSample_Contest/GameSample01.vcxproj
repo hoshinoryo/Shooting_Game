@@ -167,6 +167,7 @@
     <ClCompile Include="system_timer.cpp" />
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="title.cpp" />
+    <ClCompile Include="ui_element.cpp" />
     <ClCompile Include="WICTextureLoader11.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -199,6 +200,7 @@
     <ClInclude Include="system_timer.h" />
     <ClInclude Include="texture.h" />
     <ClInclude Include="title.h" />
+    <ClInclude Include="ui_element.h" />
     <ClInclude Include="WICTextureLoader11.h" />
   </ItemGroup>
   <ItemGroup>

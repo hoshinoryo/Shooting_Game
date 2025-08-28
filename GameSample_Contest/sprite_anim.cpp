@@ -106,7 +106,7 @@ void SpriteAnim_Update(double elapsed_time)
 	}
 }
 
-void SpriteAnim_Draw(int playid, float dx, float dy, float dw, float dh, bool isFlipX)
+void SpriteAnim_Draw(int playid, float dx, float dy, float dw, float dh, bool isFlipX, const XMFLOAT4& color)
 {
 	if (playid < 0 || playid >= ANIM_PLAY_MAX) return;
 	int anim_pattern_id = g_AnimPlayData[playid].m_PatternId;
@@ -124,7 +124,7 @@ void SpriteAnim_Draw(int playid, float dx, float dy, float dw, float dh, bool is
 	float pw = pAnimPatternData->m_PatternSize.x;
 	float ph = pAnimPatternData->m_PatternSize.y;
 
-	Sprite_Draw(*pAnimPatternData->m_Texture, dx, dy, dw, dh, (int)px, (int)py, (int)pw, (int)ph, isFlipX);
+	Sprite_Draw(*pAnimPatternData->m_Texture, dx, dy, dw, dh, (int)px, (int)py, (int)pw, (int)ph, isFlipX, color);
 }
 
 int SpriteAnim_RegisterPattern(const Texture& tex, int patternMax, int h_pattern_max, double seconds_per_pattern,

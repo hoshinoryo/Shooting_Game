@@ -41,6 +41,7 @@ private:
 	Circle playerCircleCollision;
 	Box playerBoxCollision;
 	bool playerEnable;
+	int playerHp;
 	Status playerStatus;
 	Status lastMoveStatus;
 	Texture playerTex;
@@ -62,6 +63,7 @@ public:
 	void Draw(const ViewRect& viewRect);
 
 	bool GetIsEnable();
+	int GetHp();
 
 	Circle GetCircleCollision();
 	Box GetBoxCollision();
@@ -73,6 +75,7 @@ public:
 	void SetWorldPosition(DirectX::XMFLOAT2& position);
 	void SetScreenPosition(const ViewRect& viewRect);
 
+	void Damage();
 	void Destroy();
 };
 

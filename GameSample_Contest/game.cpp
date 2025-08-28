@@ -19,6 +19,7 @@
 #include "map.h"
 #include "check_collision.h"
 #include "fade.h"
+#include "ui_element.h"
 
 // Debug output
 #include "debug_text.h"
@@ -34,8 +35,11 @@ std::string mg_filePath = "resources/Tiled_Project/output/test_map_mg.csv";
 std::string fg_filePath = "resources/Tiled_Project/output/test_map_fg.csv";
 std::string col_filePath = "resources/Tiled_Project/output/test_map_collisions.csv";
 
-Player testPlayer;
-Camera testCam;
+Player player;
+Camera gameCam;
+ScoreUI testScoreUI;
+StateUI testStateUI;
+UIManager testUIManger;
 
 static bool g_GameStart = false;
 
@@ -48,20 +52,29 @@ void Game_Initialize()
     testCollision.Initialize(col_filePath);
 
     // Camera Initialization
-    testCam.Initialize(
+    gameCam.Initialize(
         Direct3D_GetBackBufferWidth(), Direct3D_GetBackBufferHeight(),
         (float)testMapMg.GetMapWidth(), (float)testMapMg.GetMapHeight()
     );
 
-    testPlayer.Initialize({ Direct3D_GetBackBufferWidth() * 0.5f, Direct3D_GetBackBufferHeight() * 0.5f});
+    // Player Initialization
+    player.Initialize({ Direct3D_GetBackBufferWidth() * 0.5f, Direct3D_GetBackBufferHeight() * 0.5f});
     Bullet_Initialize();
 
+    // Enemy Spawner in world coordinate
     EnemySpawner_Initialize();
-    // Enemyê∂ê¨äÌ with world coordinate
     EnemySpawner_Create({ 800.0f,   0.0f }, ENEMY_TYPE_01, 4.0f, 2.0, 8);
     EnemySpawner_Create({   0.0f, 400.0f }, ENEMY_TYPE_02, 3.0f, 1.0, 4);
 
     //Effect_Initialize();
+
+    // Game UI
+    testStateUI.Initialize({ 1100.0f, 40.0f });
+    testScoreUI.Initialize({ 1350.0f, 120.0f }, 5);
+    testUIManger.Add(&testStateUI);
+    testUIManger.Add(&testScoreUI);
+
+    testStateUI.BindPlayer(&player);
 
     Fade_Start(0.8f, false);
     g_GameStart = false;
@@ -73,9 +86,9 @@ void Game_Finalize()
     EnemySpawner_Finalize();
 
     Bullet_Finalize();
-    testPlayer.Finalize();
+    player.Finalize();
 
-    testCam.Finalize();
+    gameCam.Finalize();
     testCollision.Finalize();
     testMapFg.Finalize();
     testMapMg.Finalize();
@@ -89,39 +102,41 @@ void Game_Update(double elapsed_time)
     }
 
     EnemySpawner_Update(elapsed_time);
-    Enemy_UpdateAll(elapsed_time, testPlayer.GetWorldPosition(), testCollision);
+    Enemy_UpdateAll(elapsed_time, player.GetWorldPosition(), testCollision);
 
-    testPlayer.Update(elapsed_time, testCollision);
+    player.Update(elapsed_time, testCollision);
     Bullet_Update(elapsed_time);
 
-    testCam.Update(testPlayer.GetWorldPosition());
+    gameCam.Update(player.GetWorldPosition());
 
     CheckCollision_BulletVSEnemy();
-    CheckCollision_PlayerVSEnemy(testPlayer);
+    CheckCollision_PlayerVSEnemy(player);
 
     //Effect_Update(elapsed_time);
+    testUIManger.Update(elapsed_time);
 
 //#if defined(DEBUG) || defined(_DEBUG)
 //
-//    hal::dout << "Player position: " << testPlayer.GetPosition().x << ", " << testPlayer.GetPosition().y << std::endl;
-//    hal::dout << "Camera Position: " << testCam.GetX() << ", " << testCam.GetY() << std::endl;
-//    hal::dout << "Delta: " << (testPlayer.GetPosition().x - testCam.GetX() - Direct3D_GetBackBufferWidth() * 0.5f) << std::endl;
+//    hal::dout << "Player position: " << player.GetPosition().x << ", " << player.GetPosition().y << std::endl;
+//    hal::dout << "Camera Position: " << gameCam.GetX() << ", " << gameCam.GetY() << std::endl;
+//    hal::dout << "Delta: " << (player.GetPosition().x - gameCam.GetX() - Direct3D_GetBackBufferWidth() * 0.5f) << std::endl;
 //
 //#endif
 }
 
 void Game_Draw()
 {
-    // Map Draw
-    testMapMg.Draw(testCam.GetViewRect());
-    testMapFg.Draw(testCam.GetViewRect());
-    //testCollision.Draw(testCam.GetViewRect());
+    // Map Drawing
+    testMapMg.Draw(gameCam.GetViewRect());
+    testMapFg.Draw(gameCam.GetViewRect());
+    //testCollision.Draw(gameCam.GetViewRect());
 
-    Bullet_Draw(testCam.GetViewRect());
-    testPlayer.Draw(testCam.GetViewRect());
+    Bullet_Draw(gameCam.GetViewRect());
+    player.Draw(gameCam.GetViewRect());
 
-    Enemy_DrawAll(testCam.GetViewRect());
+    Enemy_DrawAll(gameCam.GetViewRect());
 
     //Effect_Draw();
+    testUIManger.Draw();
 }
 

@@ -14,6 +14,7 @@
 #include "direct3d.h"
 #include "effect.h"
 #include "check_collision.h"
+#include "ui_element.h"
 
 #include <DirectXMath.h>
 
@@ -23,6 +24,7 @@ using namespace DirectX;
 static constexpr float ENEMY_SPEED = 100.0f;
 
 Enemy g_Enemies[ENEMIES_MAX] = {};
+extern ScoreUI testScoreUI;
 
 struct EnemyConfig // 敵の配置
 {
@@ -45,13 +47,14 @@ Enemy::Enemy()
     enemyVelocity = {};
     enemySize = {};
     lifeTime = 0.0;
-    hp = 1;
+    enemyHp = 1;
     enemyAnimPlayId = -1;
     enemyCircleCollision = { { 64.0f, 64.0f }, 28.0f };
     enemyBoxCollision = { { 64.0f, 92.0f }, 24.0f, 10.0f }; // test collision box
     isEnable = false;
     isDamaged = false;
     isFlipX = false;
+    damagedTimer = 0.0f;
 }
 
 void Enemy::Initialize(EnemyTypeID id, const XMFLOAT2& pos)
@@ -61,7 +64,7 @@ void Enemy::Initialize(EnemyTypeID id, const XMFLOAT2& pos)
     enemyScreenPosition = {};
 
     // from EnemyConfig
-    hp = g_EnemyConfigs[typeId].hpMax;
+    enemyHp = g_EnemyConfigs[typeId].hpMax;
     enemySize = g_EnemyConfigs[typeId].size;
     enemyTex.Initialize(Direct3D_GetDevice(), g_EnemyConfigs[typeId].texPath);
     enemyAnimPlayId = SpriteAnim_CreatePlayer(
@@ -72,6 +75,7 @@ void Enemy::Initialize(EnemyTypeID id, const XMFLOAT2& pos)
     lifeTime = 0.0;
     isEnable = true;
     isDamaged = false;
+    damagedTimer = 0.0f;
 }
 
 void Enemy::Finalize()
@@ -83,9 +87,18 @@ void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos, Collisio
 {
     if (!isEnable) return;
 
+    if (isDamaged)
+    {
+        damagedTimer -= static_cast<float>(elapsed_time);
+        if (damagedTimer <= 0.0f)
+        {
+            isDamaged = false;
+        }
+    }
+
     lifeTime += elapsed_time;
 
-    if (lifeTime >= 30.0f)
+    if (lifeTime >= 60.0f)
     {
         Destroy();
         return;
@@ -146,17 +159,6 @@ void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos, Collisio
     }
 
     isFlipX = (dx > 0.0f);
-
-    //SetScreenPosition(viewRect);
-
-    /*
-    // 画面の外出ると消える
-    if (enemyScreenPosition.x + enemySize.x * 0.5f < 0.0f || enemyScreenPosition.x + enemySize.x * 0.5f > 1600.0f ||
-        enemyScreenPosition.y < -enemySize.y || enemyScreenPosition.y > 900.0f)
-    {
-        isEnable = false;
-    }
-    */
 }
 
 void Enemy::Draw(const ViewRect& viewRect)
@@ -165,9 +167,16 @@ void Enemy::Draw(const ViewRect& viewRect)
 
     SetScreenPosition(viewRect);
 
+    XMFLOAT4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    if (isDamaged)
+    {
+        color = { 1.0f, 0.3f, 0.3f, 1.0f };
+    }
+
     SpriteAnim_Draw(
         enemyAnimPlayId, enemyScreenPosition.x, enemyScreenPosition.y,
-        enemySize.x, enemySize.y, isFlipX
+        enemySize.x, enemySize.y, isFlipX, color
     );
 
     isDamaged = false;
@@ -230,17 +239,18 @@ void Enemy::SetScreenPosition(const ViewRect& viewRect)
 
 int Enemy::GetHp()
 {
-    return hp;
+    return enemyHp;
 }
 
 void Enemy::Damage()
 {
     if (lifeTime < 1.0) return;
 
+    enemyHp--;
     isDamaged = true;
-    hp--;
+    damagedTimer = 0.1f;
 
-    if (hp <= 0)
+    if (enemyHp <= 0)
     {
         Destroy();
     }
@@ -255,6 +265,8 @@ void Enemy::Destroy()
         });
     */
     isEnable = false;
+
+    testScoreUI.AddScore(100);
 }
 
 void Enemy_Create(EnemyTypeID typeId, const DirectX::XMFLOAT2& position)

@@ -36,12 +36,16 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "UI_Frames_Tileset.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "test_map.tmx": {
-            "scale": 0.5,
+            "scale": 0.25,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 1665,
-                "y": 961
+                "x": 1696,
+                "y": 1074
             }
         },
         "test_map.tmx#Collision": {
@@ -72,9 +76,10 @@
     ],
     "project": "map_background.tiled-project",
     "recentFiles": [
+        "UI_Frames_Tileset.tsx",
+        "Fence_Big_Tileset.tsx",
         "Christmass_Tileset.tsx",
         "test_map.tmx",
-        "Fence_Big_Tileset.tsx",
         "title_map.tmx",
         "Christmas_Deco_Tileset.tsx",
         "Collision_Tileset.tsx",
