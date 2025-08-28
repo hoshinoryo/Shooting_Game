@@ -22,6 +22,11 @@ using namespace DirectX;
 
 
 static constexpr float ENEMY_SPEED = 150.0f;
+static constexpr float HP_SLIDER_HEIGHT = 16.0f;
+static constexpr XMFLOAT2 HP_SLIDER_OFFSET = { 32.0f, -24.0f };
+
+static Texture HpSliderBGTex;
+static Texture HpSliderFGTex;
 
 Enemy g_Enemies[ENEMIES_MAX] = {};
 extern ScoreUI testScoreUI;
@@ -34,8 +39,9 @@ struct EnemyConfig // “G‚Ì”z’u
 };
 
 static EnemyConfig g_EnemyConfigs[ENEMY_TYPE_MAX] = {
-    { L"resources/Enemy_01.png", 3, { 128.0f, 128.0f } },
-    { L"resources/Enemy_02.png", 4, { 128.0f, 128.0f } }
+    { L"resources/Enemy_01.png", 4, { 128.0f, 128.0f } },
+    { L"resources/Enemy_02.png", 5, { 128.0f, 128.0f } },
+    { L"resources/Enemy_03.png", 3, { 128.0f, 128.0f } }
 };
 
 
@@ -55,6 +61,8 @@ Enemy::Enemy()
     isDamaged = false;
     isFlipX = false;
     damagedTimer = 0.0f;
+
+    hpSliderWidth = 0.0f;
 }
 
 void Enemy::Initialize(EnemyTypeID id, const XMFLOAT2& pos)
@@ -76,10 +84,16 @@ void Enemy::Initialize(EnemyTypeID id, const XMFLOAT2& pos)
     isEnable = true;
     isDamaged = false;
     damagedTimer = 0.0f;
+
+    hpSliderWidth = 64.0f;
+    HpSliderBGTex.Initialize(Direct3D_GetDevice(), L"resources/EnemyHP_SliderBG.png");
+    HpSliderFGTex.Initialize(Direct3D_GetDevice(), L"resources/EnemyHP_SliderFull.png");
 }
 
 void Enemy::Finalize()
 {
+    HpSliderFGTex.Finalize();
+    HpSliderBGTex.Finalize();
     enemyTex.Finalize();
 }
 
@@ -181,6 +195,16 @@ void Enemy::Draw(const ViewRect& viewRect)
 
     isDamaged = false;
 
+    // HP slider
+    float hpPercent = (float)enemyHp / (float)g_EnemyConfigs[typeId].hpMax;
+    if (hpPercent < 0.0f) hpPercent = 0.0f;
+
+    float hpSliderPosX = enemyScreenPosition.x + HP_SLIDER_OFFSET.x;
+    float hpSliderPosY = enemyScreenPosition.y + HP_SLIDER_OFFSET.y;
+
+    Sprite_Draw(HpSliderBGTex, hpSliderPosX, hpSliderPosY);
+    Sprite_Draw(HpSliderFGTex, hpSliderPosX, hpSliderPosY, hpSliderWidth * hpPercent, HP_SLIDER_HEIGHT);
+
 #if defined(DEBUG) || defined(_DEBUG)
 
     Circle c = GetCircleCollision();
@@ -219,6 +243,12 @@ Box Enemy::GetBoxCollision()
 {
     return { { enemyWorldPosition.x + enemyBoxCollision.center.x, enemyWorldPosition.y + enemyBoxCollision.center.y },
     enemyBoxCollision.half_width, enemyBoxCollision.half_height };
+}
+
+void Enemy::Move(float dx, float dy)
+{
+    enemyWorldPosition.x += dx;
+    enemyWorldPosition.y += dy;
 }
 
 XMFLOAT2 Enemy::GetWorldPosition()
@@ -290,6 +320,8 @@ void Enemy_UpdateAll(double elapsed_time, const XMFLOAT2& playerPos, Collision_M
             g_Enemies[i].Update(elapsed_time, playerPos, map);
         }
     }
+
+    CheckCollision_EnemyVSEnemy();
 }
 
 void Enemy_DrawAll(const ViewRect& viewRect)

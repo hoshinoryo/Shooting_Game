@@ -58,6 +58,37 @@ void CheckCollision_PlayerVSEnemy(Player& player)
     }
 }
 
+void CheckCollision_EnemyVSEnemy()
+{
+    for (int i = 0; i < ENEMIES_MAX; i++)
+    {
+        if (!g_Enemies[i].GetIsEnable()) continue;
+
+        for (int j = i + 1; j < ENEMIES_MAX; j++)
+        {
+            if (!g_Enemies[j].GetIsEnable()) continue;
+
+            Circle c1 = g_Enemies[i].GetCircleCollision();
+            Circle c2 = g_Enemies[j].GetCircleCollision();
+
+            if (Collision_CheckCircle(c1, c2))
+            {
+                float dx = c2.center.x - c1.center.x;
+                float dy = c2.center.y - c1.center.y;
+                float dist = sqrtf(dx * dx + dy * dy);
+                if (dist < 0.0001f) dist = 0.0001f;
+
+                float overlap = (c1.radius + c2.radius - dist) * 0.5f;
+                float nx = dx / dist;
+                float ny = dy / dist;
+
+                g_Enemies[i].Move(-nx * overlap, -ny * overlap);
+                g_Enemies[j].Move(nx * overlap, ny * overlap);
+            }
+        }
+    }
+}
+
 
 bool CheckCollision_BoxVSMap(const Box& worldBox, Collision_Map& map)
 {

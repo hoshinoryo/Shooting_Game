@@ -16,6 +16,7 @@
 
 void CheckCollision_BulletVSEnemy();
 void CheckCollision_PlayerVSEnemy(Player& player);
+void CheckCollision_EnemyVSEnemy();
 
 bool CheckCollision_BoxVSMap(const Box& box, Collision_Map& map);
 

@@ -63,8 +63,9 @@ void Game_Initialize()
 
     // Enemy Spawner in world coordinate
     EnemySpawner_Initialize();
-    EnemySpawner_Create({ 800.0f,   0.0f }, ENEMY_TYPE_01, 4.0f, 3.0, 8);
-    EnemySpawner_Create({   0.0f, 700.0f }, ENEMY_TYPE_02, 3.0f, 5.0, 5);
+    EnemySpawner_Create({ 200.0f, 0.0f }, { 1000.0f, 0.0f }, ENEMY_TYPE_01, 4.0f, 2.0, 8);
+    EnemySpawner_Create({ 0.0f, 300.0f }, { 0.0f, 900.0f }, ENEMY_TYPE_02, 3.0f, 4.0, 3);
+    EnemySpawner_Create({ 3200.0f, 500.0f }, { 3200.0f, 1600.0f }, ENEMY_TYPE_03, 2.0f, 3.0, 6);
 
     //Effect_Initialize();
 

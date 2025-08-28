@@ -380,7 +380,7 @@ void Player::Shoot(double elapsed_time)
     }
 }
 
-// NOTICE: IN THE SCREEN SPACE!!!
+// NOTICE: DRAW IN THE SCREEN SPACE!!!
 
 void Player::Draw(const ViewRect& viewRect)
 {
@@ -440,9 +440,6 @@ Circle Player::GetCircleCollision()
 
 Box Player::GetBoxCollision()
 {
-    //float half_width = playerSize.x * 0.5f;
-    //float half_height = playerSize.y * 0.5f;
-    //return { {playerScreenPosition.x + half_width, playerScreenPosition.y + half_height}, half_width, half_height };
     return { { playerWorldPosition.x + playerBoxCollision.center.x, playerWorldPosition.y + playerBoxCollision.center.y },
         playerBoxCollision.half_width, playerBoxCollision.half_height };
 }

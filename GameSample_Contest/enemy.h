@@ -22,6 +22,7 @@ enum EnemyTypeID : int
 {
     ENEMY_TYPE_01,
     ENEMY_TYPE_02,
+    ENEMY_TYPE_03,
     ENEMY_TYPE_MAX
 };
 
@@ -45,6 +46,8 @@ private:
     bool isFlipX;
     float damagedTimer;
 
+    float hpSliderWidth;
+
 public:
 
     Enemy();
@@ -61,6 +64,7 @@ public:
 
     Circle GetCircleCollision();
     Box GetBoxCollision();
+    void Move(float dx, float dy);
 
     DirectX::XMFLOAT2 GetWorldPosition();
     DirectX::XMFLOAT2 GetScreenPosition();
