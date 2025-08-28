@@ -36,15 +36,21 @@ private:
 	DirectX::XMFLOAT2 playerScreenPosition;
 	DirectX::XMFLOAT2 playerVelocity;
 	DirectX::XMFLOAT2 playerSize;
+
+	Texture playerTex;
 	bool playerFlip;
 	int playerAnimPlayId;
 	Circle playerCircleCollision;
 	Box playerBoxCollision;
 	bool playerEnable;
+
 	int playerHp;
+	bool playerDamaged;
+	float damagedTimer;
+	bool damagedStatusApplied;
+
 	Status playerStatus;
 	Status lastMoveStatus;
-	Texture playerTex;
 
 public:
 
@@ -55,7 +61,7 @@ public:
 
 	void UpdatePosition(double elapsed_time, Collision_Map& map);
 	void UpdateStatus();
-	void ChangeStatus(Status newPlayerStatus);
+	void ChangeStatus(Status newPlayerStatus, bool forceDamaged);
 	void Update(double elapsed_time, Collision_Map& map);
 	
 	DirectX::XMFLOAT2 GetShootDirection();

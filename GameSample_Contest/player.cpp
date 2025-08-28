@@ -25,6 +25,8 @@ using namespace DirectX;
 static constexpr float PLAYER_ANIM_PLAY_RATE = 0.08f;
 static constexpr float PLAYER_SPEED = 6.0f;
 
+static bool forceDamaged = false;
+
 
 Player::Player()
 {
@@ -37,7 +39,12 @@ Player::Player()
     playerCircleCollision = { { 64.0f, 92.0f }, 20.0f };
     playerBoxCollision = { { 64.0f, 92.0f }, 24.0f, 10.0f }; // test collision box
     playerEnable = true;
+
     playerHp = 0;
+    playerDamaged = false;
+    damagedTimer = 0.0f;
+    damagedStatusApplied = false;
+
     playerStatus = none;
     lastMoveStatus = none;
 }
@@ -158,12 +165,15 @@ void Player::UpdateStatus()
         }
     }
 
-    ChangeStatus(newPlayerStatus);
+    if (!playerDamaged && newPlayerStatus != playerStatus)
+    {
+        ChangeStatus(newPlayerStatus, false);
+    }
 }
 
-void Player::ChangeStatus(Status newPlayerStatus)
+void Player::ChangeStatus(Status newPlayerStatus, bool forceDamaged)
 {
-    if (newPlayerStatus == playerStatus) return; // if status haven't changed
+    if (!forceDamaged && newPlayerStatus == playerStatus) return; // if status haven't changed
 
     if (playerAnimPlayId >= 0)
     {
@@ -174,6 +184,59 @@ void Player::ChangeStatus(Status newPlayerStatus)
     playerStatus = newPlayerStatus;
 
     // register new animation
+
+    // damaged texture
+    if (forceDamaged)
+    {
+
+        if (!damagedStatusApplied)
+        {
+            damagedStatusApplied = true;
+
+            switch (lastMoveStatus)
+            {
+            case walkFront:
+            case stopFront:
+                playerAnimPlayId = SpriteAnim_CreatePlayer(
+                    SpriteAnim_RegisterPattern(
+                        playerTex, 1, 1,
+                        PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
+                        { 384.0f, 896.0f }, true
+                    )
+                );
+                break;
+
+            case walkLeft:
+            case stopLeft:
+            case walkRight:
+            case stopRight:
+                playerAnimPlayId = SpriteAnim_CreatePlayer(
+                    SpriteAnim_RegisterPattern(
+                        playerTex, 1, 1,
+                        PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
+                        { 384.0f, 1024.0f }, true
+                    )
+                );
+                break;
+
+            case walkBack:
+            case stopBack:
+                playerAnimPlayId = SpriteAnim_CreatePlayer(
+                    SpriteAnim_RegisterPattern(
+                        playerTex, 1, 1,
+                        PLAYER_ANIM_PLAY_RATE, { playerSize.x, playerSize.y },
+                        { 384.0f, 1152.0f }, true
+                    )
+                );
+                break;
+            }
+        }
+        return; // if is damaged don't draw normal texture
+    }
+
+    // normal sprite animation
+    damagedStatusApplied = false;
+    
     switch (playerStatus)
     {
     case walkFront:
@@ -244,9 +307,28 @@ void Player::Update(double elapsed_time, Collision_Map& map)
 {
     UpdatePosition(elapsed_time, map);
     Shoot(elapsed_time);
-    UpdateStatus();
 
-    //SetScreenPosition(viewRect);
+    if (playerDamaged) // damage textrue first
+    {
+        damagedTimer -= static_cast<float>(elapsed_time);
+
+        if (!damagedStatusApplied)
+        {
+            ChangeStatus(lastMoveStatus, true);
+            damagedStatusApplied = true;
+        }
+
+        if (damagedTimer <= 0.0f)
+        {
+            playerDamaged = false;
+            damagedStatusApplied = false;
+            ChangeStatus(lastMoveStatus, false);
+        }
+    }
+    else
+    {
+        UpdateStatus();
+    }
 }
 
 
@@ -291,7 +373,6 @@ XMFLOAT2 Player::GetShootDirection()
 
 void Player::Shoot(double elapsed_time)
 {
-    // ’e‚ð”­ŽË‚·‚é
     if (KeyLogger_IsTrigger(KK_SPACE))
     {
         Bullet_Create({ playerWorldPosition.x + playerSize.x * 0.5f, playerWorldPosition.y + playerSize.y * 0.5f },
@@ -384,6 +465,10 @@ XMFLOAT2 Player::GetSize()
 void Player::Damage()
 {
     playerHp--;
+
+    playerDamaged = true;
+    damagedTimer = 0.1f;
+    damagedStatusApplied = false;
 
     if (playerHp <= 0)
     {

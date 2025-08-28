@@ -41,11 +41,11 @@
             "scaleInEditor": 1
         },
         "test_map.tmx": {
-            "scale": 0.25,
+            "scale": 0.33,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 1696,
-                "y": 1074
+                "x": 1240.909090909091,
+                "y": 825.7575757575756
             }
         },
         "test_map.tmx#Collision": {
@@ -55,7 +55,7 @@
             "scale": 0.5,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 852,
+                "x": 817,
                 "y": 617
             }
         }

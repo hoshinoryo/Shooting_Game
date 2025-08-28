@@ -17,7 +17,7 @@
 
 using namespace DirectX;
 
-static constexpr float BULLET_SPEED = 500.0f;
+static constexpr float BULLET_SPEED = 600.0f;
 
 struct Bullet
 {
@@ -73,7 +73,8 @@ void Bullet_Update(double elapsed_time)
         }
 
         // ‰æ–Ê‚ÌŠOo‚é‚Ì‚àÁ‚¦‚é
-        if (b.worldPosition.x > Direct3D_GetBackBufferWidth())
+        if (b.worldPosition.x > 3200.0f || b.worldPosition.x < (0.0f - b.size.x) ||
+            b.worldPosition.y > 1920.0f || b.worldPosition.y < (0.0f - b.size.y))
         {
             b.isEnable = false;
         }

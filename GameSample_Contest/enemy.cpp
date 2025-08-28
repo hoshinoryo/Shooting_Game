@@ -21,7 +21,7 @@
 using namespace DirectX;
 
 
-static constexpr float ENEMY_SPEED = 100.0f;
+static constexpr float ENEMY_SPEED = 150.0f;
 
 Enemy g_Enemies[ENEMIES_MAX] = {};
 extern ScoreUI testScoreUI;
@@ -50,7 +50,7 @@ Enemy::Enemy()
     enemyHp = 1;
     enemyAnimPlayId = -1;
     enemyCircleCollision = { { 64.0f, 64.0f }, 28.0f };
-    enemyBoxCollision = { { 64.0f, 92.0f }, 24.0f, 10.0f }; // test collision box
+    enemyBoxCollision = { { 64.0f, 92.0f }, 16.0f, 8.0f }; // test collision box
     isEnable = false;
     isDamaged = false;
     isFlipX = false;
