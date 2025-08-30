@@ -114,7 +114,7 @@ void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos, Collisio
 
     if (lifeTime >= 60.0f)
     {
-        Destroy();
+        Destroy(ByTimeout);
         return;
     }
 
@@ -282,11 +282,11 @@ void Enemy::Damage()
 
     if (enemyHp <= 0)
     {
-        Destroy();
+        Destroy(ByBullet);
     }
 }
 
-void Enemy::Destroy()
+void Enemy::Destroy(EnemyDeathReason reason)
 {
     /*
     Effect_Create({
@@ -296,7 +296,18 @@ void Enemy::Destroy()
     */
     isEnable = false;
 
-    testScoreUI.AddScore(100);
+    switch (reason)
+    {
+    case ByBullet:
+        testScoreUI.AddScore(100);
+        break;
+
+    case ByPlayerCollision:
+        break;
+
+    case ByTimeout:
+        break;
+    }
 }
 
 void Enemy_Create(EnemyTypeID typeId, const DirectX::XMFLOAT2& position)
@@ -333,4 +344,16 @@ void Enemy_DrawAll(const ViewRect& viewRect)
             g_Enemies[i].Draw(viewRect);
         }
     }
+}
+
+bool Enemy_AreAllCleared()
+{
+    for (int i = 0; i < ENEMIES_MAX; i++)
+    {
+        if (g_Enemies[i].GetIsEnable())
+        {
+            return false;
+        }
+    }
+    return true;
 }

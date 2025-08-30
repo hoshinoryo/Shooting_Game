@@ -100,3 +100,15 @@ void EnemySpawner_Create(const XMFLOAT2& posMin, const XMFLOAT2& posMax,
     pEs->spawn_time = 0.0;
     g_SpawnerCount++;
 }
+
+bool EnemySpawner_IsFinishedAll()
+{
+    for (int i = 0; i < g_SpawnerCount; i++)
+    {
+        if (!g_EnemySpawners[i].isFinished)
+        {
+            return false;
+        }
+    }
+    return true;
+}

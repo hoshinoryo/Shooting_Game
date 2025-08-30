@@ -10,6 +10,7 @@
 #include "ui_element.h"
 #include "direct3d.h"
 #include "sprite.h"
+#include "texture.h"
 
 #include <algorithm>
 
@@ -76,6 +77,11 @@ void ScoreUI::Draw()
 unsigned int ScoreUI::GetScore()
 {
 	return realScore;
+}
+
+int ScoreUI::GetDigit()
+{
+	return digit;
 }
 
 void ScoreUI::AddScore(int score)

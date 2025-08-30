@@ -19,11 +19,11 @@
 
 static constexpr float BUTTON_CENTER = 800.0f;
 
-enum TitleState
-{
-    TITLE_STATE_FADE_IN,
-    TITLE_STATE_FIGHTER_SHOW,
-};
+//enum TitleState
+//{
+//    TITLE_STATE_FADE_IN,
+//    TITLE_STATE_FIGHTER_SHOW,
+//};
 
 enum MenuState
 {
@@ -33,7 +33,7 @@ enum MenuState
     MENU_MAX
 };
 
-static TitleState g_State = {};
+//static TitleState g_State = {};
 static int g_SelectedMenu = MENU_PLAY;
 static bool g_isPressed = false;
 static double g_pressedTime = 0.0;

@@ -10,11 +10,11 @@
 #ifndef UI_ELEMENT_H
 #define UI_ELEMENT_H
 
-#include "texture.h"
 #include "player.h"
 
 #include <DirectXMath.h>
 #include <vector>
+
 
 class UIElement
 {
@@ -50,6 +50,7 @@ public:
 	void Draw() override;
 
 	unsigned int GetScore();
+	int GetDigit();
 	void AddScore(int score);
 	void ResetScore();
 

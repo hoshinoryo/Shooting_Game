@@ -11,9 +11,10 @@
 #include "game.h"
 #include "title.h"
 #include "guide.h"
+#include "result.h"
 
-//static Scene g_Scene = SCENE_TITLE;
-static Scene g_Scene = SCENE_GAME; // debug
+static Scene g_Scene = SCENE_TITLE;
+//static Scene g_Scene = SCENE_RESULT; // debug
 static Scene g_SceneNext = g_Scene;
 
 void Scene_Initialize()
@@ -28,6 +29,9 @@ void Scene_Initialize()
         break;
     case SCENE_GAME:
         Game_Initialize();
+        break;
+    case SCENE_RESULT:
+        Result_Initialize();
         break;
     }
 }
@@ -45,6 +49,9 @@ void Scene_Finalize()
     case SCENE_GAME:
         Game_Finalize();
         break;
+    case SCENE_RESULT:
+        Result_Finalize();
+        break;
     }
 }
 
@@ -61,6 +68,9 @@ void Scene_Update(double elapsed_time)
     case SCENE_GAME:
         Game_Update(elapsed_time);
         break;
+    case SCENE_RESULT:
+        Result_Update(elapsed_time);
+        break;
     }
 }
 
@@ -76,6 +86,9 @@ void Scene_Draw()
         break;
     case SCENE_GAME:
         Game_Draw();
+        break;
+    case SCENE_RESULT:
+        Result_Draw();
         break;
     }
 }

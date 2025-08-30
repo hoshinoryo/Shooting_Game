@@ -21,4 +21,6 @@ void EnemySpawner_Update(double elapsed_time);
 void EnemySpawner_Create(const DirectX::XMFLOAT2& posMin, const DirectX::XMFLOAT2& posMax,
     EnemyTypeID id, double spawn_time, double spawn_rate, int spawn_count);
 
+bool EnemySpawner_IsFinishedAll();
+
 #endif ENEMY_SPAWNER_H

@@ -53,7 +53,7 @@ void CheckCollision_PlayerVSEnemy(Player& player)
         ))
         {
             player.Damage();
-            g_Enemies[ei].Destroy();
+            g_Enemies[ei].Destroy(ByPlayerCollision);
         }
     }
 }

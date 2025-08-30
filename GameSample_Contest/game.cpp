@@ -20,6 +20,8 @@
 #include "check_collision.h"
 #include "fade.h"
 #include "ui_element.h"
+#include "scene.h"
+#include "result.h"
 
 // Debug output
 #include "debug_text.h"
@@ -97,16 +99,23 @@ void Game_Finalize()
 
 void Game_Update(double elapsed_time)
 {
-    if (!g_GameStart && Fade_GetState() == FADE_STATE_FINISHED_IN)
+    /*if (!g_GameStart && Fade_GetState() == FADE_STATE_FINISHED_IN)
     {
         g_GameStart = true;
-    }
+    }*/
 
     EnemySpawner_Update(elapsed_time);
     Enemy_UpdateAll(elapsed_time, player.GetWorldPosition(), testCollision);
 
     player.Update(elapsed_time, testCollision);
     Bullet_Update(elapsed_time);
+
+    if (!player.GetIsEnable())
+    {
+        Result_SetScoreAndDigit(testScoreUI.GetScore(), testScoreUI.GetDigit());
+        Scene_Change(SCENE_RESULT);
+        return;
+    }
 
     gameCam.Update(player.GetWorldPosition());
 
@@ -115,6 +124,12 @@ void Game_Update(double elapsed_time)
 
     //Effect_Update(elapsed_time);
     testUIManger.Update(elapsed_time);
+
+    if (Enemy_AreAllCleared() && EnemySpawner_IsFinishedAll())
+    {
+        Result_SetScoreAndDigit(testScoreUI.GetScore(), testScoreUI.GetDigit());
+        Scene_Change(SCENE_RESULT);
+    }
 
 //#if defined(DEBUG) || defined(_DEBUG)
 //
