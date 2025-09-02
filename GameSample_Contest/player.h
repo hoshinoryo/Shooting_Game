@@ -62,7 +62,7 @@ public:
 	void UpdatePosition(double elapsed_time, Collision_Map& map);
 	void UpdateStatus();
 	void ChangeStatus(Status newPlayerStatus, bool forceDamaged);
-	void Update(double elapsed_time, Collision_Map& map);
+	void Update(double elapsed_time, Collision_Map& map, const ViewRect& viewRect);
 	
 	DirectX::XMFLOAT2 GetShootDirection();
 	void Shoot(double elapsed_time);

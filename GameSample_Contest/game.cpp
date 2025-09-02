@@ -22,6 +22,7 @@
 #include "ui_element.h"
 #include "scene.h"
 #include "result.h"
+#include "render_queue.h"
 
 // Debug output
 #include "debug_text.h"
@@ -99,17 +100,18 @@ void Game_Finalize()
 
 void Game_Update(double elapsed_time)
 {
-    /*if (!g_GameStart && Fade_GetState() == FADE_STATE_FINISHED_IN)
-    {
-        g_GameStart = true;
-    }*/
-
     EnemySpawner_Update(elapsed_time);
-    Enemy_UpdateAll(elapsed_time, player.GetWorldPosition(), testCollision);
 
-    player.Update(elapsed_time, testCollision);
-    Bullet_Update(elapsed_time);
+    // enemy update
+    Enemy_UpdateAll(elapsed_time, player.GetWorldPosition(), testCollision, gameCam.GetViewRect());
 
+    // player update
+    player.Update(elapsed_time, testCollision, gameCam.GetViewRect());
+
+    // bullet update
+    Bullet_UpdateAll(elapsed_time, gameCam.GetViewRect());
+
+    // if player die
     if (!player.GetIsEnable())
     {
         Result_SetScoreAndDigit(testScoreUI.GetScore(), testScoreUI.GetDigit());
@@ -123,8 +125,11 @@ void Game_Update(double elapsed_time)
     CheckCollision_PlayerVSEnemy(player);
 
     //Effect_Update(elapsed_time);
+
+    // ui update
     testUIManger.Update(elapsed_time);
 
+    // game clear
     if (Enemy_AreAllCleared() && EnemySpawner_IsFinishedAll())
     {
         Result_SetScoreAndDigit(testScoreUI.GetScore(), testScoreUI.GetDigit());
@@ -134,8 +139,6 @@ void Game_Update(double elapsed_time)
 //#if defined(DEBUG) || defined(_DEBUG)
 //
 //    hal::dout << "Player position: " << player.GetPosition().x << ", " << player.GetPosition().y << std::endl;
-//    hal::dout << "Camera Position: " << gameCam.GetX() << ", " << gameCam.GetY() << std::endl;
-//    hal::dout << "Delta: " << (player.GetPosition().x - gameCam.GetX() - Direct3D_GetBackBufferWidth() * 0.5f) << std::endl;
 //
 //#endif
 }
@@ -147,10 +150,12 @@ void Game_Draw()
     testMapFg.Draw(gameCam.GetViewRect());
     //testCollision.Draw(gameCam.GetViewRect());
 
-    Bullet_Draw(gameCam.GetViewRect());
-    player.Draw(gameCam.GetViewRect());
+    //Bullet_Draw(gameCam.GetViewRect());
+    //player.Draw(gameCam.GetViewRect());
 
-    Enemy_DrawAll(gameCam.GetViewRect());
+    //Enemy_DrawAll(gameCam.GetViewRect());
+
+    RenderQueue::DrawAll();
 
     //Effect_Draw();
     testUIManger.Draw();

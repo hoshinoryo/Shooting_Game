@@ -15,6 +15,7 @@
 #include "effect.h"
 #include "check_collision.h"
 #include "ui_element.h"
+#include "render_queue.h"
 
 #include <DirectXMath.h>
 
@@ -97,10 +98,11 @@ void Enemy::Finalize()
     enemyTex.Finalize();
 }
 
-void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos, Collision_Map& map)
+void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos, Collision_Map& map, const ViewRect& viewRect)
 {
     if (!isEnable) return;
 
+    // damaged status
     if (isDamaged)
     {
         damagedTimer -= static_cast<float>(elapsed_time);
@@ -110,6 +112,7 @@ void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos, Collisio
         }
     }
 
+    // lift time
     lifeTime += elapsed_time;
 
     if (lifeTime >= 60.0f)
@@ -118,7 +121,7 @@ void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos, Collisio
         return;
     }
 
-    // direction vector towards the player
+    // AI: direction vector towards the player
     float dx = playerWorldPos.x - enemyWorldPosition.x;
     float dy = playerWorldPos.y - enemyWorldPosition.y;
     float len = sqrtf(dx * dx + dy * dy);
@@ -172,7 +175,13 @@ void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos, Collisio
         }
     }
 
+    // flip in x axis
     isFlipX = (dx > 0.0f);
+
+    RenderQueue::Add(GetWorldPosition().y, [this, viewRect]()
+        {
+            this->Draw(viewRect);
+        });
 }
 
 void Enemy::Draw(const ViewRect& viewRect)
@@ -322,19 +331,20 @@ void Enemy_Create(EnemyTypeID typeId, const DirectX::XMFLOAT2& position)
     }
 }
 
-void Enemy_UpdateAll(double elapsed_time, const XMFLOAT2& playerPos, Collision_Map& map)
+void Enemy_UpdateAll(double elapsed_time, const XMFLOAT2& playerPos, Collision_Map& map, const ViewRect& viewRect)
 {
     for (int i = 0; i < ENEMIES_MAX; i++)
     {
         if (g_Enemies[i].GetIsEnable())
         {
-            g_Enemies[i].Update(elapsed_time, playerPos, map);
+            g_Enemies[i].Update(elapsed_time, playerPos, map, viewRect);
         }
     }
 
     CheckCollision_EnemyVSEnemy();
 }
 
+/*
 void Enemy_DrawAll(const ViewRect& viewRect)
 {
     for (int i = 0; i < ENEMIES_MAX; i++)
@@ -345,6 +355,7 @@ void Enemy_DrawAll(const ViewRect& viewRect)
         }
     }
 }
+*/
 
 bool Enemy_AreAllCleared()
 {

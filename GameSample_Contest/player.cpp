@@ -15,6 +15,7 @@
 #include "bullet.h"
 #include "direct3d.h"
 #include "check_collision.h"
+#include "render_queue.h"
 
 #include "debug_text.h"
 
@@ -303,7 +304,7 @@ void Player::ChangeStatus(Status newPlayerStatus, bool forceDamaged)
     }
 }
 
-void Player::Update(double elapsed_time, Collision_Map& map)
+void Player::Update(double elapsed_time, Collision_Map& map, const ViewRect& viewRect)
 {
     UpdatePosition(elapsed_time, map);
     Shoot(elapsed_time);
@@ -329,6 +330,11 @@ void Player::Update(double elapsed_time, Collision_Map& map)
     {
         UpdateStatus();
     }
+
+    RenderQueue::Add(GetWorldPosition().y, [this, viewRect]() 
+        {
+            this->Draw(viewRect); 
+        });
 }
 
 

@@ -13,6 +13,8 @@
 #include "sprite.h"
 #include "texture.h"
 #include "key_logger.h"
+#include "render_queue.h"
+
 #include <DirectXMath.h>
 
 using namespace DirectX;
@@ -28,6 +30,11 @@ struct Bullet
     double life_time;
     bool isEnable;
     Circle collision; // world coordinate
+
+    void Update(double elapsed_time, const ViewRect& viewRect);
+    void Draw(const ViewRect& viewRect);
+
+    void SetScreenPosition(const ViewRect& viewRect);
 };
 
 static Bullet g_Bullets[BULLETS_MAX] = {};
@@ -48,7 +55,8 @@ void Bullet_Finalize()
     bulletTex.Finalize();
 }
 
-void Bullet_Update(double elapsed_time)
+/*
+void Bullet_Update(double elapsed_time, const ViewRect& viewRect)
 {
     for (Bullet& b : g_Bullets)
     {
@@ -78,9 +86,46 @@ void Bullet_Update(double elapsed_time)
         {
             b.isEnable = false;
         }
+
+        RenderQueue::Add(b.worldPosition.y, [this, viewRect]()
+            {
+                this->Draw();
+            });
     }
 }
+*/
 
+void Bullet::Update(double elapsed_time, const ViewRect& viewRect)
+{
+    if (!isEnable) return;
+
+    worldPosition.x += velocity.x * (float)elapsed_time;
+    worldPosition.y += velocity.y * (float)elapsed_time;
+
+    life_time += elapsed_time;
+
+    collision.center.x = size.x * 0.5f;
+    collision.center.y = size.y * 0.5f;
+
+    if (life_time > 5.0f)
+    {
+        isEnable = false;
+    }
+
+    if (worldPosition.x > 3200.0f || worldPosition.x < (0.0f - size.x) ||
+        worldPosition.y > 1920.0f || worldPosition.y < (0.0f - size.y))
+    {
+        isEnable = false;
+        return;
+    }
+
+    RenderQueue::Add(worldPosition.y, [this, viewRect]()
+        {
+            this->Draw(viewRect);
+        });
+}
+
+/*
 void Bullet_Draw(const ViewRect& viewRect)
 {
     for (int i = 0; i < BULLETS_MAX; i++)
@@ -102,6 +147,25 @@ void Bullet_Draw(const ViewRect& viewRect)
 
 #endif
     }
+}
+*/
+
+void Bullet::Draw(const ViewRect& viewRect)
+{
+    if (!isEnable) return;
+
+    SetScreenPosition(viewRect);
+
+    Sprite_Draw(bulletTex, screenPosition.x, screenPosition.y, size.x, size.y);
+
+#if defined(DEBUG) || defined(_DEBUG)
+
+    Circle c = collision;
+    c.center.x -= viewRect.rectPosition.x;
+    c.center.y -= viewRect.rectPosition.y;
+    Collision_DebugDraw(c, { 1.0f, 0.0f, 0.0f, 1.0f });
+
+#endif
 }
 
 void Bullet_Create(const XMFLOAT2& position, const XMFLOAT2 dir, bool isFlipX)
@@ -141,6 +205,16 @@ void Bullet_Destroy(int index)
     g_Bullets[index].isEnable = false;
 }
 
+void Bullet_UpdateAll(double elapsed_time, const ViewRect& viewRect)
+{
+    for (int i = 0; i < BULLETS_MAX; i++)
+    {
+        if (!g_Bullets[i].isEnable) continue;
+        g_Bullets[i].Update(elapsed_time, viewRect);
+    }
+}
+
+/*
 void Bullet_SetScreenPosition(const ViewRect& viewRect)
 {
     for (Bullet& b : g_Bullets)
@@ -148,4 +222,11 @@ void Bullet_SetScreenPosition(const ViewRect& viewRect)
         b.screenPosition.x = b.worldPosition.x - viewRect.rectPosition.x;
         b.screenPosition.y = b.worldPosition.y - viewRect.rectPosition.y;
     }
+}
+*/
+
+void Bullet::SetScreenPosition(const ViewRect& viewRect)
+{
+    screenPosition.x = worldPosition.x - viewRect.rectPosition.x;
+    screenPosition.y = worldPosition.y - viewRect.rectPosition.y;
 }

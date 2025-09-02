@@ -59,10 +59,11 @@ private:
 public:
 
     Enemy();
+
     void Initialize(EnemyTypeID id, const DirectX::XMFLOAT2& pos);
     void Finalize();
 
-    void Update(double elapsed_time, const DirectX::XMFLOAT2& playerPos, Collision_Map& map);
+    void Update(double elapsed_time, const DirectX::XMFLOAT2& playerPos, Collision_Map& map, const ViewRect& viewRect);
     void Draw(const ViewRect& viewRect);
     void Damage();
     void Destroy(EnemyDeathReason reason);
@@ -86,8 +87,8 @@ extern Enemy g_Enemies[ENEMIES_MAX]; // Global enemy array
 
 // Global methods
 void Enemy_Create(EnemyTypeID typeId, const DirectX::XMFLOAT2& position);
-void Enemy_UpdateAll(double elapsed_time, const DirectX::XMFLOAT2& playerPos, Collision_Map& map);
-void Enemy_DrawAll(const ViewRect& viewRect);
+void Enemy_UpdateAll(double elapsed_time, const DirectX::XMFLOAT2& playerPos, Collision_Map& map, const ViewRect& viewRect);
+//void Enemy_DrawAll(const ViewRect& viewRect);
 bool Enemy_AreAllCleared();
 
 #endif // ENEMY_H
