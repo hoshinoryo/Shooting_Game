@@ -24,6 +24,8 @@ using namespace DirectX;
 
 static constexpr float ENEMY_SPEED = 150.0f;
 static constexpr float HP_SLIDER_HEIGHT = 16.0f;
+static constexpr float HP_BAR_WIDTH = 56.0f;
+static constexpr float HP_BAR_HEIGHT = 16.0f;
 static constexpr XMFLOAT2 HP_SLIDER_OFFSET = { 32.0f, -24.0f };
 
 static Texture HpSliderBGTex;
@@ -204,7 +206,7 @@ void Enemy::Draw(const ViewRect& viewRect)
 
     isDamaged = false;
 
-    // HP slider
+    // HP bar
     float hpPercent = (float)enemyHp / (float)g_EnemyConfigs[typeId].hpMax;
     if (hpPercent < 0.0f) hpPercent = 0.0f;
 
@@ -212,7 +214,8 @@ void Enemy::Draw(const ViewRect& viewRect)
     float hpSliderPosY = enemyScreenPosition.y + HP_SLIDER_OFFSET.y;
 
     Sprite_Draw(HpSliderBGTex, hpSliderPosX, hpSliderPosY);
-    Sprite_Draw(HpSliderFGTex, hpSliderPosX, hpSliderPosY, hpSliderWidth * hpPercent, HP_SLIDER_HEIGHT);
+    Sprite_Draw(HpSliderFGTex, hpSliderPosX + 4.0f, hpSliderPosY + 4.0f, HP_BAR_WIDTH * hpPercent, HP_BAR_HEIGHT,
+        4.0f, 4.0f, HP_BAR_WIDTH * hpPercent, HP_BAR_HEIGHT);
 
 #if defined(DEBUG) || defined(_DEBUG)
 

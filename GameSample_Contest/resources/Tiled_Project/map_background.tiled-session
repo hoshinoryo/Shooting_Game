@@ -44,8 +44,8 @@
             "scale": 0.33,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 1240.909090909091,
-                "y": 825.7575757575756
+                "x": 1446.9696969696968,
+                "y": 819.6969696969695
             }
         },
         "test_map.tmx#Collision": {
@@ -55,7 +55,7 @@
             "scale": 0.5,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 817,
+                "x": 935,
                 "y": 617
             }
         }
@@ -76,12 +76,12 @@
     ],
     "project": "map_background.tiled-project",
     "recentFiles": [
+        "Christmas_Deco_Tileset.tsx",
+        "title_map.tmx",
         "UI_Frames_Tileset.tsx",
         "Fence_Big_Tileset.tsx",
         "Christmass_Tileset.tsx",
         "test_map.tmx",
-        "title_map.tmx",
-        "Christmas_Deco_Tileset.tsx",
         "Collision_Tileset.tsx",
         "Collision_Full_Tileset.tsx",
         "Christmass_Map.tsx"

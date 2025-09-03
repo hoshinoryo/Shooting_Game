@@ -55,6 +55,7 @@ private:
 public:
 
 	Player();
+	~Player();
 
 	void Initialize(const DirectX::XMFLOAT2& position);
 	void Finalize();

@@ -10,37 +10,60 @@
 #include "map.h"
 #include "sprite.h"
 #include "direct3d.h"
+#include "render_queue.h"
 
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <vector>
 #include <string>
+#include <queue>
+
+// Debug output
+#include "debug_text.h"
+#include "debug_ostream.h"
 
 
 // Map class
 
 Map::Map()
 {
-	//mapTexId = -1;
 	std::fill(std::begin(mapArray), std::end(mapArray), -1); // default are all -1
-	mapWidth = MAPCHIP_WIDTH * MAP_H_COUNT;
-	mapHeight = MAPCHIP_HEIGHT * MAP_V_COUNT;
+
+	chipWidth = 0;
+	chipHeight = 0;
+	chipsPerRow = 1;
+	chipsPerCol = 1;
+
+	mapWidth = chipWidth * MAP_H_COUNT;
+	mapHeight = chipHeight * MAP_V_COUNT;
 }
 
 Map::~Map()
 {
-
+	Finalize();
 }
 
-void Map::Initialize(const std::string& filePath)
+void Map::Initialize(const std::string& filePath, const wchar_t* texturePath, int chipW, int chipH)
 {
-	mapTex.Initialize(Direct3D_GetDevice(), L"resources/Christmass_Grass.png");
+	mapTex.Initialize(Direct3D_GetDevice(), texturePath);
 
 	if (!LoadMapFromCSV(filePath))
 	{
 		MessageBox(nullptr, "マップファイルの読み込みに失敗しました", "Error", MB_OK);
 	}
+
+	chipWidth = chipW;
+	chipHeight = chipH;
+
+	int texWidth = mapTex.GetWidth();
+	int texHeight = mapTex.GetHeight();
+
+	chipsPerRow = texWidth  / chipWidth;
+	chipsPerCol = texHeight / chipHeight;
+
+	mapWidth = chipWidth * MAP_H_COUNT;
+	mapHeight = chipHeight * MAP_V_COUNT;
 }
 
 void Map::Finalize()
@@ -79,18 +102,18 @@ void Map::Update(float elapsed_time)
 void Map::Draw(const ViewRect& viewRect)
 {
 	// Starting map chip index
-	float offsetX = viewRect.rectPosition.x / MAPCHIP_WIDTH;
-	float offsetY = viewRect.rectPosition.y / MAPCHIP_HEIGHT;
+	float offsetX = viewRect.rectPosition.x / chipWidth;
+	float offsetY = viewRect.rectPosition.y / chipHeight;
 
 	int tileOffsetX = static_cast<int>(offsetX);
 	int tileOffsetY = static_cast<int>(offsetY);
 
 	// Local offset from starting map chip
-	float localOffsetX = -(viewRect.rectPosition.x - tileOffsetX * MAPCHIP_WIDTH);
-	float localOffsetY = -(viewRect.rectPosition.y - tileOffsetY * MAPCHIP_HEIGHT);
+	float localOffsetX = -(viewRect.rectPosition.x - tileOffsetX * chipWidth);
+	float localOffsetY = -(viewRect.rectPosition.y - tileOffsetY * chipHeight);
 
-	int horizontalCount = static_cast<int>(viewRect.rectWidth / MAPCHIP_WIDTH) + 2;
-	int verticalCount = static_cast<int>(viewRect.rectHeight / MAPCHIP_HEIGHT) + 2;
+	int horizontalCount = static_cast<int>(viewRect.rectWidth / chipWidth) + 2;
+	int verticalCount = static_cast<int>(viewRect.rectHeight / chipHeight) + 2;
 
 	// Map chip drawing
 	for (int y = 0; y < verticalCount; y++)
@@ -107,13 +130,112 @@ void Map::Draw(const ViewRect& viewRect)
 			if (chipId == -1) continue;
 
 			// Map chip position in screen space
-			float chipPosX = (float)(x * MAPCHIP_WIDTH) + localOffsetX;
-			float chipPosY = (float)(y * MAPCHIP_HEIGHT) + localOffsetY;
+			float chipPosX = (float)(x * chipWidth) + localOffsetX;
+			float chipPosY = (float)(y * chipHeight) + localOffsetY;
 
-			int chipIndexX = chipId % 8;
-			int chipIndexY = chipId / 8;
+			int chipIndexX = chipId % chipsPerRow;
+			int chipIndexY = chipId / chipsPerRow;
 
-			Sprite_Draw(mapTex, chipPosX, chipPosY, MAPCHIP_WIDTH, MAPCHIP_HEIGHT, 64 * chipIndexX, 64 * chipIndexY, 64.0f, 64.0f);
+			Sprite_Draw(mapTex, chipPosX, chipPosY, chipWidth, chipHeight,
+				chipWidth * chipIndexX, chipHeight * chipIndexY, 64.0f, 64.0f);
+		}
+	}
+}
+
+void Map::QueueDraw(const ViewRect& viewRect)
+{
+	//const int layerHeight = 32;
+
+	int startX = static_cast<int>(viewRect.rectPosition.x / chipWidth);
+	int startY = static_cast<int>(viewRect.rectPosition.y / chipHeight);
+
+	int horizontalCount = static_cast<int>(viewRect.rectWidth / chipWidth) + 2;
+	int verticalCount = static_cast<int>(viewRect.rectHeight / chipHeight) + 2;
+
+	// clamp
+	if (startX < 0) startX = 0;
+	if (startY < 0) startY = 0;
+	if (startX + horizontalCount > MAP_H_COUNT) horizontalCount = MAP_H_COUNT - startX;
+	if (startY + verticalCount > MAP_V_COUNT) verticalCount = MAP_V_COUNT - startY;
+
+	std::vector<std::vector<bool>> visited(MAP_V_COUNT, std::vector<bool>(MAP_H_COUNT, false)); // visited mapArray
+
+	std::queue<std::pair<int, int>> q;
+	std::vector<std::pair<int, int>> blockGroup;
+
+	const int dx[4] = { 1, -1, 0, 0 };
+	const int dy[4] = { 0, 0, 1, -1 };
+
+	auto isValid = [&](int y, int x)
+		{
+			return (x >= 0 && x < MAP_H_COUNT &&
+				y >= 0 && y < MAP_V_COUNT &&
+				mapArray[y * MAP_H_COUNT + x] != -1 && !visited[y][x]);
+		};
+
+	for (int y = startY; y < startY + verticalCount; y++)
+	{
+		for (int x = startX; x < startX + horizontalCount; x++)
+		{
+			if (!isValid(y, x)) continue;
+
+			while (!q.empty()) q.pop();
+			blockGroup.clear();
+
+			q.push(std::make_pair(y, x));
+			visited[y][x] = true;
+
+			float groupMaxY = y * chipHeight;
+
+			while (!q.empty())
+			{
+				std::pair<int, int> cur = q.front(); q.pop();
+				int cy = cur.first;
+				int cx = cur.second;
+
+				blockGroup.push_back(cur);
+
+				float chipY = static_cast<float>(cy) * chipHeight;
+				if (chipY > groupMaxY) groupMaxY = chipY;
+
+				for (int dir = 0; dir < 4; dir++)
+				{
+					int ny = cy + dy[dir];
+					int nx = cx + dx[dir];
+					if (isValid(ny, nx))
+					{
+						visited[ny][nx] = true;
+						q.push(std::make_pair(ny, nx));
+					}
+				}
+			}
+
+			RenderQueue::Add(groupMaxY, [this, blockGroup, viewRect]()
+				{
+					int tileOffsetX = static_cast<int>(viewRect.rectPosition.x / chipWidth);
+					int tileOffsetY = static_cast<int>(viewRect.rectPosition.y / chipHeight);
+
+					float localOffsetX = -(viewRect.rectPosition.x - tileOffsetX * chipWidth);
+					float localOffsetY = -(viewRect.rectPosition.y - tileOffsetY * chipHeight);
+
+					for (size_t i = 0; i < blockGroup.size(); ++i)
+					{
+						int by = blockGroup[i].first;
+						int bx = blockGroup[i].second;
+
+						int chipId = mapArray[by * MAP_H_COUNT + bx];
+
+						int chipIndexX = chipId % chipsPerRow;
+						int chipIndexY = chipId / chipsPerRow;
+						//float chipPosX = (float)(bx * chipWidth) + localOffsetX;
+						//float chipPosY = (float)(by * chipHeight) + localOffsetY;
+						float chipPosX = (float)(bx * chipWidth - viewRect.rectPosition.x);
+						float chipPosY = (float)(by * chipHeight - viewRect.rectPosition.y);
+
+						Sprite_Draw(mapTex, chipPosX, chipPosY, chipWidth, chipHeight,
+							chipWidth * chipIndexX, chipHeight * chipIndexY, 64.0f, 64.0f);
+					}
+				});
 		}
 	}
 }
@@ -123,16 +245,18 @@ void Map::Draw(const ViewRect& viewRect)
 
 Collision_Map::Collision_Map()
 {
-	//mapTexId = -1;
 	std::fill(std::begin(mapArray), std::end(mapArray), -1);
-	mapWidth = MAPCHIP_WIDTH * MAP_H_COUNT;
-	mapHeight = MAPCHIP_HEIGHT * MAP_V_COUNT;
+
+	chipWidth = 0;
+	chipHeight = 0;
+	chipsPerRow = 1;
+	chipsPerCol = 1;
 
 	chipBoxCollision.resize(MAP_H_COUNT * MAP_V_COUNT);
 }
 
 
-void Collision_Map::Initialize(const std::string& filePath)
+void Collision_Map::Initialize(const std::string& filePath, int chipW, int chipH)
 {
 	mapTex.Initialize(Direct3D_GetDevice(), L"resources/Collision_full.png");
 
@@ -141,6 +265,18 @@ void Collision_Map::Initialize(const std::string& filePath)
 		MessageBox(nullptr, "マップファイルの読み込みに失敗しました", "Error", MB_OK);
 	}
 
+	chipWidth = chipW;
+	chipHeight = chipH;
+
+	int texWidth = mapTex.GetWidth();
+	int texHeight = mapTex.GetHeight();
+
+	chipsPerRow = texWidth / chipWidth;
+	chipsPerCol = texHeight / chipHeight;
+
+	mapWidth = chipWidth * MAP_H_COUNT;
+	mapHeight = chipHeight * MAP_V_COUNT;
+
 	for (int y = 0; y < MAP_V_COUNT; y++)
 	{
 		for (int x = 0; x < MAP_H_COUNT; x++)
@@ -148,8 +284,8 @@ void Collision_Map::Initialize(const std::string& filePath)
 			int chipId = mapArray[y * MAP_H_COUNT + x];
 			if (chipId == -1) continue;
 
-			float chipPosX = (float)(x * MAPCHIP_WIDTH);
-			float chipPosY = (float)(y * MAPCHIP_HEIGHT);
+			float chipPosX = (float)(x * chipWidth);
+			float chipPosY = (float)(y * chipHeight);
 
 			chipBoxCollision[y * MAP_H_COUNT + x] = GenerateChipBox(chipPosX, chipPosY, chipId);
 		}
@@ -159,17 +295,17 @@ void Collision_Map::Initialize(const std::string& filePath)
 
 void Collision_Map::Draw(const ViewRect& viewRect)
 {
-	float offsetX = viewRect.rectPosition.x / MAPCHIP_WIDTH;
-	float offsetY = viewRect.rectPosition.y / MAPCHIP_HEIGHT;
+	float offsetX = viewRect.rectPosition.x / chipWidth;
+	float offsetY = viewRect.rectPosition.y / chipHeight;
 
 	int tileOffsetX = static_cast<int>(offsetX);
 	int tileOffsetY = static_cast<int>(offsetY);
 
-	float localOffsetX = -(viewRect.rectPosition.x - tileOffsetX * MAPCHIP_WIDTH);
-	float localOffsetY = -(viewRect.rectPosition.y - tileOffsetY * MAPCHIP_HEIGHT);
+	float localOffsetX = -(viewRect.rectPosition.x - tileOffsetX * chipWidth);
+	float localOffsetY = -(viewRect.rectPosition.y - tileOffsetY * chipHeight);
 
-	int horizontalCount = static_cast<int>(viewRect.rectWidth / MAPCHIP_WIDTH) + 2;
-	int verticalCount = static_cast<int>(viewRect.rectHeight / MAPCHIP_HEIGHT) + 2;
+	int horizontalCount = static_cast<int>(viewRect.rectWidth / chipWidth) + 2;
+	int verticalCount = static_cast<int>(viewRect.rectHeight / chipHeight) + 2;
 
 	for (int y = 0; y < verticalCount; y++)
 	{
@@ -184,13 +320,13 @@ void Collision_Map::Draw(const ViewRect& viewRect)
 
 			if (chipId == -1) continue;
 
-			float chipPosX = (float)(x * MAPCHIP_WIDTH) + localOffsetX;
-			float chipPosY = (float)(y * MAPCHIP_HEIGHT) + localOffsetY;
+			float chipPosX = (float)(x * chipWidth) + localOffsetX;
+			float chipPosY = (float)(y * chipHeight) + localOffsetY;
 
 			int chipIndexX = chipId % 4;
 			int chipIndexY = chipId / 4;
 
-			Sprite_Draw(mapTex, chipPosX, chipPosY, MAPCHIP_WIDTH, MAPCHIP_HEIGHT, 64 * chipIndexX, 64 * chipIndexY, 64.0f, 64.0f);
+			Sprite_Draw(mapTex, chipPosX, chipPosY, chipWidth, chipHeight, 64 * chipIndexX, 64 * chipIndexY, 64.0f, 64.0f);
 
 #if defined(DEBUG) || defined(_DEBUG)
 			for (auto& localBox : chipBoxCollision[mapY * MAP_H_COUNT + mapX])
@@ -208,12 +344,12 @@ void Collision_Map::Draw(const ViewRect& viewRect)
 
 int Collision_Map::GetWorldToMapX(float x)
 {
-	return (int)(x / MAPCHIP_WIDTH) + (x < 0 ? -1 : 0);
+	return (int)(x / chipWidth) + (x < 0 ? -1 : 0);
 }
 
 int Collision_Map::GetWorldToMapY(float y)
 {
-	return (int)(y / MAPCHIP_HEIGHT) + (y < 0 ? -1 : 0);
+	return (int)(y / chipHeight) + (y < 0 ? -1 : 0);
 }
 
 int Collision_Map::GetMapChip(int map_x, int map_y)

@@ -31,11 +31,13 @@
 #include <iostream>
 #include <string>
 
-Map testMapMg;
+Map MapMg;
 Map testMapFg;
+Map testMapDeco;
 Collision_Map testCollision;
 std::string mg_filePath = "resources/Tiled_Project/output/test_map_mg.csv";
 std::string fg_filePath = "resources/Tiled_Project/output/test_map_fg.csv";
+std::string deco_filePath = "resources/Tiled_Project/output/test_map_deco.csv";
 std::string col_filePath = "resources/Tiled_Project/output/test_map_collisions.csv";
 
 Player player;
@@ -44,31 +46,32 @@ ScoreUI testScoreUI;
 StateUI testStateUI;
 UIManager testUIManger;
 
-static bool g_GameStart = false;
-
 
 void Game_Initialize()
 {   
     // Map Initialization
-    testMapMg.Initialize(mg_filePath);
-    testMapFg.Initialize(fg_filePath);
-    testCollision.Initialize(col_filePath);
+    MapMg.Initialize(mg_filePath, L"resources/Christmas_Grass.png", 64, 64);
+    testMapFg.Initialize(fg_filePath, L"resources/Christmas_Grass.png", 64, 64);
+    testMapDeco.Initialize(deco_filePath, L"resources/Deco_New.png", 64, 64);
+    testCollision.Initialize(col_filePath, 64, 64);
 
     // Camera Initialization
     gameCam.Initialize(
         Direct3D_GetBackBufferWidth(), Direct3D_GetBackBufferHeight(),
-        (float)testMapMg.GetMapWidth(), (float)testMapMg.GetMapHeight()
+        (float)MapMg.GetMapWidth(), (float)MapMg.GetMapHeight()
     );
 
     // Player Initialization
     player.Initialize({ Direct3D_GetBackBufferWidth() * 0.5f, Direct3D_GetBackBufferHeight() * 0.5f});
     Bullet_Initialize();
 
+    /*
     // Enemy Spawner in world coordinate
     EnemySpawner_Initialize();
     EnemySpawner_Create({ 200.0f, 0.0f }, { 1000.0f, 0.0f }, ENEMY_TYPE_01, 4.0f, 2.0, 8);
     EnemySpawner_Create({ 0.0f, 300.0f }, { 0.0f, 900.0f }, ENEMY_TYPE_02, 3.0f, 4.0, 3);
     EnemySpawner_Create({ 3200.0f, 500.0f }, { 3200.0f, 1600.0f }, ENEMY_TYPE_03, 2.0f, 3.0, 6);
+    */
 
     //Effect_Initialize();
 
@@ -81,7 +84,6 @@ void Game_Initialize()
     testStateUI.BindPlayer(&player);
 
     Fade_Start(0.8f, false);
-    g_GameStart = false;
 }
 
 void Game_Finalize()
@@ -94,8 +96,9 @@ void Game_Finalize()
 
     gameCam.Finalize();
     testCollision.Finalize();
+    testMapDeco.Finalize();
     testMapFg.Finalize();
-    testMapMg.Finalize();
+    MapMg.Finalize();
 }
 
 void Game_Update(double elapsed_time)
@@ -111,6 +114,8 @@ void Game_Update(double elapsed_time)
     // bullet update
     Bullet_UpdateAll(elapsed_time, gameCam.GetViewRect());
 
+    gameCam.Update(player.GetWorldPosition());
+
     // if player die
     if (!player.GetIsEnable())
     {
@@ -118,8 +123,6 @@ void Game_Update(double elapsed_time)
         Scene_Change(SCENE_RESULT);
         return;
     }
-
-    gameCam.Update(player.GetWorldPosition());
 
     CheckCollision_BulletVSEnemy();
     CheckCollision_PlayerVSEnemy(player);
@@ -129,12 +132,14 @@ void Game_Update(double elapsed_time)
     // ui update
     testUIManger.Update(elapsed_time);
 
+    /*
     // game clear
     if (Enemy_AreAllCleared() && EnemySpawner_IsFinishedAll())
     {
         Result_SetScoreAndDigit(testScoreUI.GetScore(), testScoreUI.GetDigit());
         Scene_Change(SCENE_RESULT);
     }
+    */
 
 //#if defined(DEBUG) || defined(_DEBUG)
 //
@@ -146,14 +151,11 @@ void Game_Update(double elapsed_time)
 void Game_Draw()
 {
     // Map Drawing
-    testMapMg.Draw(gameCam.GetViewRect());
+    MapMg.Draw(gameCam.GetViewRect());
     testMapFg.Draw(gameCam.GetViewRect());
-    //testCollision.Draw(gameCam.GetViewRect());
+    testCollision.Draw(gameCam.GetViewRect());
 
-    //Bullet_Draw(gameCam.GetViewRect());
-    //player.Draw(gameCam.GetViewRect());
-
-    //Enemy_DrawAll(gameCam.GetViewRect());
+    testMapDeco.QueueDraw(gameCam.GetViewRect());
 
     RenderQueue::DrawAll();
 

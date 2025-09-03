@@ -38,8 +38,8 @@ Player::Player()
     playerFlip = false;
     playerAnimPlayId = -1;
     playerCircleCollision = { { 64.0f, 92.0f }, 20.0f };
-    playerBoxCollision = { { 64.0f, 92.0f }, 24.0f, 10.0f }; // test collision box
-    playerEnable = true;
+    playerBoxCollision = { { 64.0f, 92.0f }, 24.0f, 10.0f };
+    playerEnable = false;
 
     playerHp = 0;
     playerDamaged = false;
@@ -48,6 +48,11 @@ Player::Player()
 
     playerStatus = none;
     lastMoveStatus = none;
+}
+
+Player::~Player()
+{
+    Finalize();
 }
 
 void Player::Initialize(const XMFLOAT2& position)
@@ -331,7 +336,7 @@ void Player::Update(double elapsed_time, Collision_Map& map, const ViewRect& vie
         UpdateStatus();
     }
 
-    RenderQueue::Add(GetWorldPosition().y, [this, viewRect]() 
+    RenderQueue::Add(GetBoxCollision().center.y, [this, viewRect]()
         {
             this->Draw(viewRect); 
         });

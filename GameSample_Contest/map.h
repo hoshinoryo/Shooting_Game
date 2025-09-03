@@ -24,8 +24,8 @@ class Map
 {
 protected:
 
-	static constexpr unsigned int MAPCHIP_WIDTH = 64;
-	static constexpr unsigned int MAPCHIP_HEIGHT = 64;
+	//static constexpr unsigned int MAPCHIP_WIDTH = 64;
+	//static constexpr unsigned int MAPCHIP_HEIGHT = 64;
 	static constexpr unsigned int MAP_H_COUNT = 50;
 	static constexpr unsigned int MAP_V_COUNT = 30;
 
@@ -34,6 +34,11 @@ protected:
 
 	int mapArray[MAP_H_COUNT * MAP_V_COUNT];
 
+	int chipWidth;
+	int chipHeight;
+	int chipsPerRow;
+	int chipsPerCol;
+
 	Texture mapTex;
 
 public:
@@ -41,12 +46,13 @@ public:
 	Map();
 	~Map();
 
-	void Initialize(const std::string& filePath);
+	void Initialize(const std::string& filePath, const wchar_t* texturePath, int chipW, int chipH);
 	void Finalize();
 
 	bool LoadMapFromCSV(const std::string& filePath);
 	void Update(float elapsed_time);
 	void Draw(const ViewRect& viewRect);
+	void QueueDraw(const ViewRect& viewRect);
 
 	int GetMapWidth() const { return mapWidth; }
 	int GetMapHeight() const { return mapHeight; }
@@ -65,7 +71,7 @@ public:
 
 	Collision_Map();
 
-	void Initialize(const std::string& filePath);
+	void Initialize(const std::string& filePath, int chipW, int chipH);
 	void Draw(const ViewRect& viewRect);
 
 	int GetWorldToMapX(float x);

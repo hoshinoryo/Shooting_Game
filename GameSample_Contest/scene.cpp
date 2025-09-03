@@ -13,8 +13,8 @@
 #include "guide.h"
 #include "result.h"
 
-static Scene g_Scene = SCENE_TITLE;
-//static Scene g_Scene = SCENE_RESULT; // debug
+//static Scene g_Scene = SCENE_TITLE;
+static Scene g_Scene = SCENE_GAME; // debug
 static Scene g_SceneNext = g_Scene;
 
 void Scene_Initialize()
