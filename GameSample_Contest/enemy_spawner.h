@@ -11,7 +11,10 @@
 #define ENEMY_SPAWNER_H
 
 #include "enemy.h"
+
 #include <DirectXMath.h>
+
+
 
 void EnemySpawner_Initialize();
 void EnemySpawner_Finalize();
@@ -22,5 +25,6 @@ void EnemySpawner_Create(const DirectX::XMFLOAT2& posMin, const DirectX::XMFLOAT
     EnemyTypeID id, double spawn_time, double spawn_rate, int spawn_count);
 
 bool EnemySpawner_IsFinishedAll();
+int EnemySpawner_CountAppearGroups();
 
 #endif ENEMY_SPAWNER_H

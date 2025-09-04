@@ -83,7 +83,7 @@ void Result_Draw()
 	Result_DrawScore({ 640.0f, 400.0f });
 	SpriteAnim_Draw(ReindeerAnimId, 1050.0f, 550.0f, 128.0f, 128.0f, false);
 	Sprite_Draw(PressTex, 340.0f, 720.0f);
-	SpriteAnim_Draw(EnterKeyAnimId, 505.0f, 700.0f, 192.0f, 56.0f , false);
+	SpriteAnim_Draw(EnterKeyAnimId, 505.0f, 700.0f, 192.0f, 56.0f, false);
 	Sprite_Draw(ReturnTex, 710.0f, 720.0f);
 }
 

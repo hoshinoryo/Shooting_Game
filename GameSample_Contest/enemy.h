@@ -31,8 +31,14 @@ enum EnemyDeathReason
     ByBullet,
     ByPlayerCollision,
     ByTimeout,
+    ByArrivedTarget,
 };
 
+enum EnemyTargetType
+{
+    PlayerPosition,
+    FixedPoint,
+};
 
 class Enemy
 {
@@ -43,6 +49,7 @@ private:
     DirectX::XMFLOAT2 enemyScreenPosition;
     DirectX::XMFLOAT2 enemyVelocity;
     DirectX::XMFLOAT2 enemySize;
+
     double lifeTime;
     int enemyHp;
     Texture enemyTex;
@@ -56,6 +63,9 @@ private:
 
     float hpSliderWidth;
 
+    EnemyTargetType targetType;
+    DirectX::XMFLOAT2 targetPos;
+
 public:
 
     Enemy();
@@ -63,7 +73,7 @@ public:
     void Initialize(EnemyTypeID id, const DirectX::XMFLOAT2& pos);
     void Finalize();
 
-    void Update(double elapsed_time, const DirectX::XMFLOAT2& playerPos, Collision_Map& map, const ViewRect& viewRect);
+    void Update(double elapsed_time, const XMFLOAT2& playerPos, Collision_Map& map, const ViewRect& viewRect);
     void Draw(const ViewRect& viewRect);
     void Damage();
     void Destroy(EnemyDeathReason reason);
@@ -80,6 +90,9 @@ public:
     void SetScreenPosition(const ViewRect& viewRect);
 
     int GetHp();
+
+    void SetTargetPosition(const DirectX::XMFLOAT2& pos = { 0.0f, 0.0f });
+    DirectX::XMFLOAT2 GetTargetPosition(const DirectX::XMFLOAT2& playerPos);
 };
 
 

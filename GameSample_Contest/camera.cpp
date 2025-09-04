@@ -25,6 +25,7 @@ Camera::Camera()
 
 void Camera::Initialize(float sw, float sh, float mw, float mh)
 {
+	position = { 150.0f, 400.0F }; // default position
 	screenWidth = sw;
 	screenHeight = sh;
 	mapWidth = mw;

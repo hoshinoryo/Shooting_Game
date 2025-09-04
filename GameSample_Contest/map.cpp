@@ -19,10 +19,6 @@
 #include <string>
 #include <queue>
 
-// Debug output
-#include "debug_text.h"
-#include "debug_ostream.h"
-
 
 // Map class
 
@@ -227,8 +223,6 @@ void Map::QueueDraw(const ViewRect& viewRect)
 
 						int chipIndexX = chipId % chipsPerRow;
 						int chipIndexY = chipId / chipsPerRow;
-						//float chipPosX = (float)(bx * chipWidth) + localOffsetX;
-						//float chipPosY = (float)(by * chipHeight) + localOffsetY;
 						float chipPosX = (float)(bx * chipWidth - viewRect.rectPosition.x);
 						float chipPosY = (float)(by * chipHeight - viewRect.rectPosition.y);
 

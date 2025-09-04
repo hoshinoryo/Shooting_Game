@@ -25,6 +25,9 @@ struct EnemySpawn
     double spawn_time; // ŽŸ‚É¶¬‚·‚é—\’è‚ÌŽžŠÔ
     int spawn_count;
     bool isFinished;
+
+    //EnemyTargetType targetType;
+    //XMFLOAT2 fixedTargetPos;
 };
 
 static constexpr unsigned int ENEMY_SPAWNER_MAX = 50;
@@ -98,6 +101,10 @@ void EnemySpawner_Create(const XMFLOAT2& posMin, const XMFLOAT2& posMax,
     pEs->isFinished = false;
     pEs->spawn_count = 0;
     pEs->spawn_time = 0.0;
+
+    //pEs->targetType = targetType;
+    //pEs->fixedTargetPos = fiexedTargetPos;
+
     g_SpawnerCount++;
 }
 
@@ -111,4 +118,35 @@ bool EnemySpawner_IsFinishedAll()
         }
     }
     return true;
+}
+
+int EnemySpawner_CountAppearGroups()
+{
+    EnemyTypeID appearedId[ENEMY_SPAWNER_MAX] = {};
+    int appearedCount = 0;
+
+    for (int i = 0; i < g_SpawnerCount; i++)
+    {
+        if (g_Time >= g_EnemySpawners[i].time)
+        {
+            EnemyTypeID id = g_EnemySpawners[i].id;
+
+            bool alreadyCounted = false;
+            for (int j = 0; j < appearedCount; j++)
+            {
+                if (appearedId[j] == id)
+                {
+                    alreadyCounted = true;
+                    break;
+                }
+            }
+
+            if (!alreadyCounted)
+            {
+                appearedId[appearedCount++] = id;
+            }
+        }
+    }
+
+    return appearedCount;
 }

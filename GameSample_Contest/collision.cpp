@@ -6,6 +6,7 @@
 // Description: Manage collision check and the debug mode 
 // 
 // ==========================================================================================
+
 #include "collision.h"
 #include "direct3d.h"
 #include "texture.h"

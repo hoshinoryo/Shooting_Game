@@ -16,6 +16,8 @@
 #include "check_collision.h"
 #include "ui_element.h"
 #include "render_queue.h"
+#include "scene.h"
+#include "result.h"
 
 #include <DirectXMath.h>
 
@@ -32,19 +34,21 @@ static Texture HpSliderBGTex;
 static Texture HpSliderFGTex;
 
 Enemy g_Enemies[ENEMIES_MAX] = {};
-extern ScoreUI testScoreUI;
+extern ScoreUI scoreUI;
 
 struct EnemyConfig // “G‚Ì”z’u
 {
     const wchar_t* texPath;
     int hpMax;
     XMFLOAT2 size;
+    EnemyTargetType targetType;
+    XMFLOAT2 targetPos;
 };
 
 static EnemyConfig g_EnemyConfigs[ENEMY_TYPE_MAX] = {
-    { L"resources/Enemy_01.png", 4, { 128.0f, 128.0f } },
-    { L"resources/Enemy_02.png", 5, { 128.0f, 128.0f } },
-    { L"resources/Enemy_03.png", 3, { 128.0f, 128.0f } }
+    { L"resources/Enemy_01.png", 4, { 128.0f, 128.0f }, FixedPoint, { 1152.0f, 1088.0f } },
+    { L"resources/Enemy_02.png", 5, { 128.0f, 128.0f }, PlayerPosition, { 1152.0f, 1088.0f } },
+    { L"resources/Enemy_03.png", 3, { 128.0f, 128.0f }, PlayerPosition, { 1152.0f, 1088.0f } }
 };
 
 
@@ -66,6 +70,8 @@ Enemy::Enemy()
     damagedTimer = 0.0f;
 
     hpSliderWidth = 0.0f;
+    targetType = PlayerPosition;
+    targetPos = { 0.0f, 0.0f };
 }
 
 void Enemy::Initialize(EnemyTypeID id, const XMFLOAT2& pos)
@@ -82,6 +88,8 @@ void Enemy::Initialize(EnemyTypeID id, const XMFLOAT2& pos)
         SpriteAnim_RegisterPattern(enemyTex, 6, 6, 0.1f, { enemySize.x, enemySize.y },
             { 0.0f, 128.0f }, true)
     );
+    targetType = g_EnemyConfigs[typeId].targetType;
+    targetPos = g_EnemyConfigs[typeId].targetPos;
 
     lifeTime = 0.0;
     isEnable = true;
@@ -100,9 +108,11 @@ void Enemy::Finalize()
     enemyTex.Finalize();
 }
 
-void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos, Collision_Map& map, const ViewRect& viewRect)
+void Enemy::Update(double elapsed_time, const XMFLOAT2& playerPos, Collision_Map& map, const ViewRect& viewRect)
 {
     if (!isEnable) return;
+
+    XMFLOAT2 target = GetTargetPosition(playerPos);
 
     // damaged status
     if (isDamaged)
@@ -124,8 +134,8 @@ void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos, Collisio
     }
 
     // AI: direction vector towards the player
-    float dx = playerWorldPos.x - enemyWorldPosition.x;
-    float dy = playerWorldPos.y - enemyWorldPosition.y;
+    float dx = target.x - enemyWorldPosition.x;
+    float dy = target.y - enemyWorldPosition.y;
     float len = sqrtf(dx * dx + dy * dy);
     if (len > 0.0001f)
     {
@@ -180,7 +190,15 @@ void Enemy::Update(double elapsed_time, const XMFLOAT2& playerWorldPos, Collisio
     // flip in x axis
     isFlipX = (dx > 0.0f);
 
-    RenderQueue::Add(GetWorldPosition().y, [this, viewRect]()
+    // if arrived at target position
+    float reachDict = 5.0f;
+    if (targetType == FixedPoint && len <= reachDict)
+    {
+        Destroy(ByArrivedTarget);
+        return;
+    }
+
+    RenderQueue::Add(GetBoxCollision().center.y, [this, viewRect]()
         {
             this->Draw(viewRect);
         });
@@ -284,6 +302,23 @@ int Enemy::GetHp()
     return enemyHp;
 }
 
+void Enemy::SetTargetPosition(const DirectX::XMFLOAT2& pos)
+{
+    targetPos = pos;
+}
+
+XMFLOAT2 Enemy::GetTargetPosition(const DirectX::XMFLOAT2& playerPos)
+{
+    if (targetType == EnemyTargetType::PlayerPosition)
+    {
+        return playerPos;
+    }
+    else
+    {
+        return targetPos;
+    }   
+}
+
 void Enemy::Damage()
 {
     if (lifeTime < 1.0) return;
@@ -311,13 +346,18 @@ void Enemy::Destroy(EnemyDeathReason reason)
     switch (reason)
     {
     case ByBullet:
-        testScoreUI.AddScore(100);
+        scoreUI.AddScore(100);
         break;
 
     case ByPlayerCollision:
         break;
 
     case ByTimeout:
+        break;
+
+    case ByArrivedTarget:
+        Result_SetScoreAndDigit(scoreUI.GetScore(), scoreUI.GetDigit());
+        Scene_Change(SCENE_RESULT);
         break;
     }
 }
@@ -334,13 +374,13 @@ void Enemy_Create(EnemyTypeID typeId, const DirectX::XMFLOAT2& position)
     }
 }
 
-void Enemy_UpdateAll(double elapsed_time, const XMFLOAT2& playerPos, Collision_Map& map, const ViewRect& viewRect)
+void Enemy_UpdateAll(double elapsed_time, const XMFLOAT2& targetPos, Collision_Map& map, const ViewRect& viewRect)
 {
     for (int i = 0; i < ENEMIES_MAX; i++)
     {
         if (g_Enemies[i].GetIsEnable())
         {
-            g_Enemies[i].Update(elapsed_time, playerPos, map, viewRect);
+            g_Enemies[i].Update(elapsed_time, targetPos, map, viewRect);
         }
     }
 
