@@ -11,6 +11,7 @@
 #include "direct3d.h"
 #include "sprite.h"
 #include "texture.h"
+#include "enemy_spawner.h"
 
 #include <algorithm>
 
@@ -18,6 +19,7 @@ using namespace DirectX;
 
 static constexpr float FONT_W = 32.0f;
 static constexpr float FONT_H = 32.0f;
+static constexpr int FULL_WAVE = 3;
 
 //---------------------------------
 // Score UI Methods
@@ -52,6 +54,12 @@ void ScoreUI::Initialize(XMFLOAT2 pos, int digit)
 void ScoreUI::Finalize()
 {
 	scoreTex.Finalize();
+
+	realScore = 0;
+	viewScore = 0;
+	counterStop = 1;
+	digit = 0;
+	screenPosition = {};
 }
 
 void ScoreUI::Update(double elapsed_time)
@@ -110,6 +118,10 @@ static Texture ScoreWordTex;
 static Texture HPWordTex;
 static Texture HPSliderTex;
 static Texture StateBGTex;
+static Texture WaveWordTex;
+static Texture OfTex;
+static Texture NumberTex;
+static Texture comingTex;
 
 StateUI::StateUI()
 {
@@ -119,18 +131,29 @@ StateUI::StateUI()
 void StateUI::Initialize(DirectX::XMFLOAT2 pos)
 {
 	screenPosition = pos;
+
 	ScoreWordTex.Initialize(Direct3D_GetDevice(), L"resources/Score.png");
 	HPWordTex.Initialize(Direct3D_GetDevice(), L"resources/HP.png");
 	HPSliderTex.Initialize(Direct3D_GetDevice(), L"resources/HP_Slider.png");
 	StateBGTex.Initialize(Direct3D_GetDevice(), L"resources/State_BG.png");
+	WaveWordTex.Initialize(Direct3D_GetDevice(), L"resources/Wave.png");
+	OfTex.Initialize(Direct3D_GetDevice(), L"resources/of.png");
+	NumberTex.Initialize(Direct3D_GetDevice(), L"resources/number.png");
+	comingTex.Initialize(Direct3D_GetDevice(), L"resources/is_coming.png");
 }
 
 void StateUI::Finailize()
 {
+	comingTex.Finalize();
+	NumberTex.Finalize();
+	OfTex.Finalize();
+	WaveWordTex.Finalize();
 	StateBGTex.Finalize();
 	HPSliderTex.Finalize();
 	HPWordTex.Finalize();
 	ScoreWordTex.Finalize();
+
+	screenPosition = {};
 }
 
 void StateUI::Update(double elapsed_time)
@@ -152,6 +175,14 @@ void StateUI::Draw()
 	}
 
 	Sprite_Draw(ScoreWordTex, screenPosition.x + 33.0f, screenPosition.y + 83.0f);
+
+	// Wave draw
+	int current_wave = EnemySpawner_CountAppearGroups();
+	Sprite_Draw(WaveWordTex, screenPosition.x + 33.0f, screenPosition.y + 145.0f, WaveWordTex.GetWidth() * 0.7f, WaveWordTex.GetHeight() * 0.7f);
+	Sprite_Draw(NumberTex, screenPosition.x + 145.0f, screenPosition.y + 133.0f, FONT_W * current_wave, 0.0f, FONT_W, FONT_H);
+	Sprite_Draw(OfTex, screenPosition.x + 185.0f, screenPosition.y + 148.0f, OfTex.GetWidth() * 0.6f, OfTex.GetHeight() * 0.6f);
+	Sprite_Draw(NumberTex, screenPosition.x + 225.0f, screenPosition.y + 133.0f, FONT_W * FULL_WAVE, 0.0F, FONT_W, FONT_H);
+	Sprite_Draw(comingTex, screenPosition.x + 265.0f, screenPosition.y + 147.0f, comingTex.GetWidth() * 0.9f, comingTex.GetHeight() * 0.9f);
 }
 
 void StateUI::BindPlayer(Player* p)

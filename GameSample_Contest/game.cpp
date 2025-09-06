@@ -49,6 +49,8 @@ ScoreUI scoreUI;
 StateUI stateUI;
 UIManager UIManger;
 
+DirectX::XMFLOAT2 PLAYER_START_POSITION = { 950.0f, 850.0f };
+
 static bool gameStart = false;
 static Texture instructionTex;
 static Texture whiteTex;
@@ -56,6 +58,12 @@ static Texture whiteTex;
 
 void Game_Initialize()
 {   
+#if defined(DEBUG) || defined(_DEBUG)
+
+    //hal::dout << "Game_Initialize called!" << std::endl;
+
+#endif
+
     // Map Initialization
     mapMg.Initialize(mg_filePath, L"resources/Christmas_Grass.png", 64, 64);
     mapFg.Initialize(fg_filePath, L"resources/Christmas_Grass.png", 64, 64);
@@ -72,8 +80,7 @@ void Game_Initialize()
     );
 
     // Player Initialization
-    //player.Initialize({ Direct3D_GetBackBufferWidth() * 0.8f, Direct3D_GetBackBufferHeight() * 0.8f });
-    player.Initialize({ 950.0f, 850.0f });
+    player.Initialize(PLAYER_START_POSITION);
     Bullet_Initialize();
     
     // Enemy Spawner in world coordinate
@@ -100,6 +107,9 @@ void Game_Finalize()
 {
     gameStart = false;
 
+    scoreUI.Finalize();
+    stateUI.Finailize();
+
     //Effect_Finalize();
     EnemySpawner_Finalize();
 
@@ -119,11 +129,7 @@ void Game_Finalize()
 
 void Game_Update(double elapsed_time)
 {
-#if defined(DEBUG) || defined(_DEBUG)
 
-    hal::dout << "Enemy Appeared " << EnemySpawner_CountAppearGroups() << std::endl;
-
-#endif
 
     if (!gameStart)
     {

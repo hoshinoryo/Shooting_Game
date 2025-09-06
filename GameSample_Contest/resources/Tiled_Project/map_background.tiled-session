@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "title_map.tmx",
+    "activeFile": "test_map.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -11,6 +11,10 @@
     "fileStates": {
         "": {
             "scaleInDock": 1
+        },
+        "Christmas_Deco_New_Tileset.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "Christmas_Deco_Tileset.tsx": {
             "scaleInDock": 1,
@@ -41,11 +45,11 @@
             "scaleInEditor": 1
         },
         "test_map.tmx": {
-            "scale": 0.33,
-            "selectedLayer": 2,
+            "scale": 1,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 1446.9696969696968,
-                "y": 819.6969696969695
+                "x": 1102.5,
+                "y": 892.5
             }
         },
         "test_map.tmx#Collision": {
@@ -71,17 +75,18 @@
     "openFiles": [
         "Christmass_Tileset.tsx",
         "test_map.tmx",
-        "title_map.tmx",
-        "Fence_Big_Tileset.tsx"
+        "Christmas_Deco_Tileset.tsx",
+        "Christmas_Deco_New_Tileset.tsx"
     ],
     "project": "map_background.tiled-project",
     "recentFiles": [
+        "Christmass_Tileset.tsx",
+        "Christmas_Deco_New_Tileset.tsx",
         "Christmas_Deco_Tileset.tsx",
+        "test_map.tmx",
         "title_map.tmx",
         "UI_Frames_Tileset.tsx",
         "Fence_Big_Tileset.tsx",
-        "Christmass_Tileset.tsx",
-        "test_map.tmx",
         "Collision_Tileset.tsx",
         "Collision_Full_Tileset.tsx",
         "Christmass_Map.tsx"

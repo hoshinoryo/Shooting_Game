@@ -25,9 +25,6 @@ struct EnemySpawn
     double spawn_time; // ŽŸ‚É¶¬‚·‚é—\’è‚ÌŽžŠÔ
     int spawn_count;
     bool isFinished;
-
-    //EnemyTargetType targetType;
-    //XMFLOAT2 fixedTargetPos;
 };
 
 static constexpr unsigned int ENEMY_SPAWNER_MAX = 50;
@@ -101,9 +98,6 @@ void EnemySpawner_Create(const XMFLOAT2& posMin, const XMFLOAT2& posMax,
     pEs->isFinished = false;
     pEs->spawn_count = 0;
     pEs->spawn_time = 0.0;
-
-    //pEs->targetType = targetType;
-    //pEs->fixedTargetPos = fiexedTargetPos;
 
     g_SpawnerCount++;
 }

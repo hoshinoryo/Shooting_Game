@@ -36,7 +36,8 @@ static Texture HpSliderFGTex;
 Enemy g_Enemies[ENEMIES_MAX] = {};
 extern ScoreUI scoreUI;
 
-struct EnemyConfig // “G‚Ì”z’u
+// “G‚Ì”z’u
+struct EnemyConfig
 {
     const wchar_t* texPath;
     int hpMax;
@@ -63,14 +64,14 @@ Enemy::Enemy()
     enemyHp = 1;
     enemyAnimPlayId = -1;
     enemyCircleCollision = { { 64.0f, 64.0f }, 28.0f };
-    enemyBoxCollision = { { 64.0f, 92.0f }, 16.0f, 8.0f }; // test collision box
+    enemyBoxCollision = { { 64.0f, 92.0f }, 16.0f, 8.0f };
     isEnable = false;
     isDamaged = false;
     isFlipX = false;
     damagedTimer = 0.0f;
 
     hpSliderWidth = 0.0f;
-    targetType = PlayerPosition;
+    targetType = TARGET_NONE;
     targetPos = { 0.0f, 0.0f };
 }
 
@@ -103,6 +104,24 @@ void Enemy::Initialize(EnemyTypeID id, const XMFLOAT2& pos)
 
 void Enemy::Finalize()
 {
+    SpriteAnim_DestroyPlayer(enemyAnimPlayId);
+    enemyAnimPlayId = -1;
+
+    typeId = ENEMY_TYPE_MAX;
+    enemyWorldPosition = { 0.0f, 0.0f };
+    enemyScreenPosition = { 0.0f, 0.0f };
+    enemyHp = 0;
+    enemySize = { 0.0f, 0.0f };
+    targetType = TARGET_NONE;
+    targetPos = { 0.0f, 0.0f };
+
+    lifeTime = 0.0;
+    isEnable = false;
+    isDamaged = false;
+    damagedTimer = 0.0f;
+
+    hpSliderWidth = 0.0f;
+
     HpSliderFGTex.Finalize();
     HpSliderBGTex.Finalize();
     enemyTex.Finalize();

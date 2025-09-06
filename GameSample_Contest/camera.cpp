@@ -14,6 +14,8 @@
 
 using namespace DirectX;
 
+extern XMFLOAT2 PLAYER_START_POSITION;
+
 Camera::Camera()
 {
 	position = { 0.0f, 0.0f };
@@ -25,11 +27,11 @@ Camera::Camera()
 
 void Camera::Initialize(float sw, float sh, float mw, float mh)
 {
-	position = { 150.0f, 400.0F }; // default position
 	screenWidth = sw;
 	screenHeight = sh;
 	mapWidth = mw;
 	mapHeight = mh;
+	position = { PLAYER_START_POSITION.x - screenWidth * 0.5f, PLAYER_START_POSITION.y - screenHeight * 0.5f }; // default position
 }
 
 void Camera::Finalize()
@@ -39,8 +41,8 @@ void Camera::Finalize()
 void Camera::Update(const XMFLOAT2& target)
 {
 	// Calculate the new camera position based on the target position
-	position.x = target.x - screenWidth / 2.0f;
-	position.y = target.y - screenHeight / 2.0f;
+	position.x = target.x - screenWidth * 0.5f;
+	position.y = target.y - screenHeight * 0.5f;
 
 	// Clamp the camera position to ensure it doesn't go out of bounds of the map
 	if (position.x < 0) position.x = 0;

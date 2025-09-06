@@ -38,6 +38,7 @@ enum EnemyTargetType
 {
     PlayerPosition,
     FixedPoint,
+    TARGET_NONE
 };
 
 class Enemy
