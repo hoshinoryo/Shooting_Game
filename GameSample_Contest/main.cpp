@@ -20,6 +20,7 @@
 #include "collision.h"
 #include "scene.h"
 #include "fade.h"
+#include "Audio.h"
 
 #pragma comment(lib, "xinput.lib")
 
@@ -49,6 +50,7 @@ int APIENTRY WinMain(
 	SystemTimer_Initialize();
 	KeyLogger_Initialize();
 	Mouse_Initialize(hWnd);
+	InitAudio();
 
 	Direct3D_Initialize(hWnd);
 	Shader_Initialize(Direct3D_GetDevice(), Direct3D_GetContext());
@@ -151,6 +153,7 @@ int APIENTRY WinMain(
 	Sprite_Finalize();
 	Shader_Finalize();
 	Direct3D_Finalize();
+	UninitAudio();
 	Mouse_Finalize();
 
 	return (int)msg.wParam;

@@ -7,6 +7,7 @@
 // 
 // ==========================================================================================
 
+#include "Audio.h"
 #include "bullet.h"
 #include "camera.h"
 #include "collision.h"
@@ -14,7 +15,6 @@
 #include "direct3d.h"
 #include "enemy.h"
 #include "enemy_spawner.h"
-//#include "effect.h"
 #include "fade.h"
 #include "game.h"
 #include "key_logger.h"
@@ -49,11 +49,14 @@ ScoreUI scoreUI;
 StateUI stateUI;
 UIManager UIManger;
 
+
 DirectX::XMFLOAT2 PLAYER_START_POSITION = { 950.0f, 850.0f };
+
 
 static bool gameStart = false;
 static Texture instructionTex;
 static Texture whiteTex;
+static int bgmId = -1;
 
 
 void Game_Initialize()
@@ -87,9 +90,9 @@ void Game_Initialize()
     EnemySpawner_Initialize();
     EnemySpawner_Create({ 200.0f, 0.0f }, { 1000.0f, 0.0f }, ENEMY_TYPE_01, 2.0f, 2.0, 8);
     EnemySpawner_Create({ 0.0f, 300.0f }, { 0.0f, 900.0f }, ENEMY_TYPE_02, 8.0f, 4.0, 4);
-    //EnemySpawner_Create({ 3200.0f, 500.0f }, { 3200.0f, 1600.0f }, ENEMY_TYPE_03, 9.0f, 3.0, 6);
+    EnemySpawner_Create({ 3200.0f, 500.0f }, { 3200.0f, 1600.0f }, ENEMY_TYPE_03, 10.0f, 3.0, 6);
 
-    //Effect_Initialize();
+    bgmId = LoadAudio("resources/BGM/christmas_piano.wav");
 
     // Game UI
     stateUI.Initialize({ 1100.0f, 40.0f });
@@ -110,7 +113,7 @@ void Game_Finalize()
     scoreUI.Finalize();
     stateUI.Finailize();
 
-    //Effect_Finalize();
+    UnloadAudio(bgmId);
     EnemySpawner_Finalize();
 
     Bullet_Finalize();
@@ -129,13 +132,12 @@ void Game_Finalize()
 
 void Game_Update(double elapsed_time)
 {
-
-
     if (!gameStart)
     {
         if (KeyLogger_IsTrigger(KK_SPACE))
         {
             gameStart = true;
+            PlayAudio(bgmId, true);
         }
         return;
     }
@@ -156,6 +158,7 @@ void Game_Update(double elapsed_time)
     // if player die
     if (!player.GetIsEnable())
     {
+        Result_SetGameResult(GAME_OVER);
         Result_SetScoreAndDigit(scoreUI.GetScore(), scoreUI.GetDigit());
         Scene_Change(SCENE_RESULT);
         return;
@@ -164,19 +167,17 @@ void Game_Update(double elapsed_time)
     CheckCollision_BulletVSEnemy();
     CheckCollision_PlayerVSEnemy(player);
 
-    //Effect_Update(elapsed_time);
-
     // UI update
     UIManger.Update(elapsed_time);
 
-    /*
     // game clear
     if (Enemy_AreAllCleared() && EnemySpawner_IsFinishedAll())
     {
+        Result_SetGameResult(GAME_CLEAR);
         Result_SetScoreAndDigit(scoreUI.GetScore(), scoreUI.GetDigit());
         Scene_Change(SCENE_RESULT);
     }
-    */
+    
 }
 
 void Game_Draw()
@@ -190,7 +191,6 @@ void Game_Draw()
 
     RenderQueue::DrawAll();
 
-    //Effect_Draw();
     UIManger.Draw();
 
     if (!gameStart)

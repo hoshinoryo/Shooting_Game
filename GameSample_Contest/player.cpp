@@ -74,10 +74,6 @@ void Player::Initialize(const XMFLOAT2& position)
 
 void Player::Finalize()
 {
-    SpriteAnim_DestroyPlayer(playerAnimPlayId);
-    playerAnimPlayId = -1;
-    playerEnable = false;
-
     playerTex.Finalize();
 }
 
@@ -332,7 +328,11 @@ void Player::Update(double elapsed_time, Collision_Map& map, const ViewRect& vie
         {
             playerDamaged = false;
             damagedStatusApplied = false;
+
+            Status tempStatus = playerStatus;
+            playerStatus = none;
             ChangeStatus(lastMoveStatus, false);
+            playerStatus = tempStatus;
         }
     }
     else

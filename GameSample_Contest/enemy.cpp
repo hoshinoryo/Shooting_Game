@@ -12,7 +12,6 @@
 #include "sprite.h"
 #include "sprite_anim.h"
 #include "direct3d.h"
-#include "effect.h"
 #include "check_collision.h"
 #include "ui_element.h"
 #include "render_queue.h"
@@ -354,12 +353,6 @@ void Enemy::Damage()
 
 void Enemy::Destroy(EnemyDeathReason reason)
 {
-    /*
-    Effect_Create({
-        enemyWorldPosition.x + enemySize.x * 0.5f,
-        enemyWorldPosition.y + enemySize.y * 0.5f
-        });
-    */
     isEnable = false;
 
     switch (reason)
@@ -375,6 +368,7 @@ void Enemy::Destroy(EnemyDeathReason reason)
         break;
 
     case ByArrivedTarget:
+        Result_SetGameResult(GAME_OVER);
         Result_SetScoreAndDigit(scoreUI.GetScore(), scoreUI.GetDigit());
         Scene_Change(SCENE_RESULT);
         break;

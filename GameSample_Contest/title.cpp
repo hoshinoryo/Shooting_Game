@@ -15,15 +15,8 @@
 #include "key_logger.h"
 #include "direct3d.h"
 #include "background.h"
+#include "Audio.h"
 
-
-static constexpr float BUTTON_CENTER = 800.0f;
-
-//enum TitleState
-//{
-//    TITLE_STATE_FADE_IN,
-//    TITLE_STATE_FIGHTER_SHOW,
-//};
 
 enum MenuState
 {
@@ -33,16 +26,19 @@ enum MenuState
     MENU_MAX
 };
 
-//static TitleState g_State = {};
+static constexpr float BUTTON_CENTER = 800.0f;
+
 static int g_SelectedMenu = MENU_PLAY;
 static bool g_isPressed = false;
 static double g_pressedTime = 0.0;
 static bool g_fadeStarted = false;
+static int g_titleBgmId = -1;
 
 static Texture g_TitleTex;
 static Texture g_PlayButtonTex;
 static Texture g_GuideButtonTex;
 static Texture g_QuitButtonTex;
+static Texture g_ArrowTex;
 
 
 void Title_Initialize()
@@ -51,19 +47,26 @@ void Title_Initialize()
     g_isPressed = false;
     g_pressedTime = 0.0;
     g_fadeStarted = false;
+    g_titleBgmId = LoadAudio("resources/BGM/silent_night.wav");
 
     g_TitleTex.Initialize(Direct3D_GetDevice(), L"resources/test_title.png");
     g_PlayButtonTex.Initialize(Direct3D_GetDevice(), L"resources/UI_Buttons/Button_Play.png");
     g_GuideButtonTex.Initialize(Direct3D_GetDevice(), L"resources/UI_Buttons/Button_Guide.png");
     g_QuitButtonTex.Initialize(Direct3D_GetDevice(), L"resources/UI_Buttons/Button_Quit.png");
+    g_ArrowTex.Initialize(Direct3D_GetDevice(), L"resources/UI_Buttons/Arrow.png");
 
     BG_Initialize();
+
+    PlayAudio(g_titleBgmId, true);
 }
 
 void Title_Finalize()
 {
     BG_Finalize();
 
+    UnloadAudio(g_titleBgmId);
+
+    g_ArrowTex.Finalize();
     g_QuitButtonTex.Finalize();
     g_GuideButtonTex.Finalize();
     g_PlayButtonTex.Finalize();
@@ -130,6 +133,7 @@ void Title_Draw()
     if (g_SelectedMenu == MENU_PLAY)
     {
         playState = g_isPressed ? 2 : 1;
+        Sprite_Draw(g_ArrowTex, BUTTON_CENTER - 50.0f, 552.0f);
     }
     Sprite_Draw(g_PlayButtonTex, BUTTON_CENTER, 530.0f, (g_PlayButtonTex.GetWidth() / 3) * playState, 0.0f,
         g_PlayButtonTex.GetWidth() / 3, g_PlayButtonTex.GetHeight());
@@ -138,6 +142,7 @@ void Title_Draw()
     if (g_SelectedMenu == MENU_GUIDE)
     {
         guideState = g_isPressed ? 2 : 1;
+        Sprite_Draw(g_ArrowTex, BUTTON_CENTER - 50.0f, 652.0f);
     }
     Sprite_Draw(g_GuideButtonTex, BUTTON_CENTER,630.0f, (g_GuideButtonTex.GetWidth() / 3) * guideState, 0.0f,
         g_GuideButtonTex.GetWidth() / 3, g_GuideButtonTex.GetHeight());
@@ -146,6 +151,7 @@ void Title_Draw()
     if (g_SelectedMenu == MENU_QUIT)
     {
         quitState = g_isPressed ? 2 : 1;
+        Sprite_Draw(g_ArrowTex, BUTTON_CENTER - 50.0f, 752.0f);
     }
     Sprite_Draw(g_QuitButtonTex, BUTTON_CENTER, 730.0f, (g_QuitButtonTex.GetWidth() / 3) * quitState, 0.0f,
         g_QuitButtonTex.GetWidth() / 3, g_QuitButtonTex.GetHeight());

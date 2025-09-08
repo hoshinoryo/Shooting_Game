@@ -33,11 +33,18 @@ static Texture ReturnTex;
 static Texture ReindeerTex;
 static Texture EnterKeyTex;
 
+static Texture OverTex;
+static Texture ClearTex;
+
+static Texture GingerHouseTex;
+static Texture AbandonedHouseTex;
+
 static int ReindeerAnimId = -1;
 static int EnterKeyAnimId = -1;
 
 static unsigned int g_ResultScore = 0;
 static int g_digit = 0;
+static Game_Result g_gameResult = GAME_RESULT_MAX;
 
 void Result_Initialize()
 {
@@ -48,6 +55,10 @@ void Result_Initialize()
 	ReturnTex.Initialize(Direct3D_GetDevice(), L"resources/return_to_main_menu.png");
 	ReindeerTex.Initialize(Direct3D_GetDevice(), L"resources/Reindeer.png");
 	EnterKeyTex.Initialize(Direct3D_GetDevice(), L"resources/UI_Buttons/Button_Enter.png");
+	OverTex.Initialize(Direct3D_GetDevice(), L"resources/Game_over.png");
+	ClearTex.Initialize(Direct3D_GetDevice(), L"resources/Game_clear.png");
+	GingerHouseTex.Initialize(Direct3D_GetDevice(), L"resources/Gingerbread_House.png");
+	AbandonedHouseTex.Initialize(Direct3D_GetDevice(), L"resources/Gingerbread_House_Abandoned.png");
 
 	ReindeerAnimId = SpriteAnim_CreatePlayer(
 		SpriteAnim_RegisterPattern(ReindeerTex, 2, 2, PLAY_SPEED, { 128.0f, 128.0f }, { 0.0f, 0.0f }, true)
@@ -59,6 +70,13 @@ void Result_Initialize()
 
 void Result_Finalize()
 {
+	SpriteAnim_DestroyPlayer(EnterKeyAnimId);
+	SpriteAnim_DestroyPlayer(ReindeerAnimId);
+
+	AbandonedHouseTex.Finalize();
+	GingerHouseTex.Finalize();
+	ClearTex.Finalize();
+	OverTex.Finalize();
 	EnterKeyTex.Finalize();
 	ReindeerTex.Finalize();
 	ReturnTex.Finalize();
@@ -78,13 +96,17 @@ void Result_Update(double elapsed_time)
 
 void Result_Draw()
 {
-	Sprite_Draw(ScoreBGTex, 408.0f, 218.0f);
-	Sprite_Draw(FinalScoreWordTex, 480.0f, 280.0f);
-	Result_DrawScore({ 640.0f, 400.0f });
-	SpriteAnim_Draw(ReindeerAnimId, 1050.0f, 550.0f, 128.0f, 128.0f, false);
-	Sprite_Draw(PressTex, 340.0f, 720.0f);
-	SpriteAnim_Draw(EnterKeyAnimId, 505.0f, 700.0f, 192.0f, 56.0f, false);
-	Sprite_Draw(ReturnTex, 710.0f, 720.0f);
+	Sprite_Draw(ScoreBGTex, 608.0f, 218.0f);
+	Sprite_Draw(FinalScoreWordTex, 680.0f, 290.0f);
+	Result_DrawScore({ 840.0f, 400.0f });
+	SpriteAnim_Draw(ReindeerAnimId, 1250.0f, 550.0f, 128.0f, 128.0f, false);
+
+	Result_DrawResult(Result_GetGameResult(), {860.0f, 520.0f});
+	Result_DrawHouse(Result_GetGameResult());
+
+	Sprite_Draw(PressTex, 460.0f, 720.0f);
+	SpriteAnim_Draw(EnterKeyAnimId, 625.0f, 700.0f, 192.0f, 56.0f, false);
+	Sprite_Draw(ReturnTex, 830.0f, 720.0f);
 }
 
 void Result_SetScoreAndDigit(const unsigned int score, const int digit)
@@ -111,6 +133,42 @@ void Result_DrawScore(XMFLOAT2 screenPosition)
 
 		temp /= 10;
 	}
+}
+
+void Result_DrawResult(Game_Result result, XMFLOAT2 screenPosition)
+{
+	switch (result)
+	{
+	case GAME_OVER:
+		Sprite_Draw(OverTex, screenPosition.x, screenPosition.y);
+		break;
+	case GAME_CLEAR:
+		Sprite_Draw(ClearTex, screenPosition.x, screenPosition.y);
+		break;
+	}
+}
+
+void Result_DrawHouse(Game_Result result)
+{
+	switch (result)
+	{
+	case GAME_OVER:
+		Sprite_Draw(AbandonedHouseTex, 130.0f, 100.0f);
+		break;
+	case GAME_CLEAR:
+		Sprite_Draw(GingerHouseTex, 130.0f, 100.0f);
+		break;
+	}
+}
+
+void Result_SetGameResult(Game_Result result)
+{
+	g_gameResult = result;
+}
+
+Game_Result Result_GetGameResult()
+{
+	return g_gameResult;
 }
 
 

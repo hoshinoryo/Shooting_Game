@@ -1,3 +1,4 @@
+D:\GM11\GameSample_Contest\Audio.cpp;D:\GM11\GameSample_Contest\GameSample01\x64\Debug\Audio.obj
 D:\GM11\GameSample_Contest\background.cpp;D:\GM11\GameSample_Contest\GameSample01\x64\Debug\background.obj
 D:\GM11\GameSample_Contest\bullet.cpp;D:\GM11\GameSample_Contest\GameSample01\x64\Debug\bullet.obj
 D:\GM11\GameSample_Contest\camera.cpp;D:\GM11\GameSample_Contest\GameSample01\x64\Debug\camera.obj
@@ -6,7 +7,6 @@ D:\GM11\GameSample_Contest\collision.cpp;D:\GM11\GameSample_Contest\GameSample01
 D:\GM11\GameSample_Contest\debug_ostream.cpp;D:\GM11\GameSample_Contest\GameSample01\x64\Debug\debug_ostream.obj
 D:\GM11\GameSample_Contest\debug_text.cpp;D:\GM11\GameSample_Contest\GameSample01\x64\Debug\debug_text.obj
 D:\GM11\GameSample_Contest\direct3d.cpp;D:\GM11\GameSample_Contest\GameSample01\x64\Debug\direct3d.obj
-D:\GM11\GameSample_Contest\effect.cpp;D:\GM11\GameSample_Contest\GameSample01\x64\Debug\effect.obj
 D:\GM11\GameSample_Contest\enemy.cpp;D:\GM11\GameSample_Contest\GameSample01\x64\Debug\enemy.obj
 D:\GM11\GameSample_Contest\enemy_spawner.cpp;D:\GM11\GameSample_Contest\GameSample01\x64\Debug\enemy_spawner.obj
 D:\GM11\GameSample_Contest\fade.cpp;D:\GM11\GameSample_Contest\GameSample01\x64\Debug\fade.obj
